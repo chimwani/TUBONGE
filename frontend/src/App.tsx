@@ -9,6 +9,11 @@ import Forums from '../dashboard/Forums'
 import Users from '../dashboard/Users'
 import Budget from '../dashboard/Budget'
 import Documents from '../dashboard/Documents'
+import ForumsPage from '../pages/ForumsPage'
+import PetitionsPage from '../pages/PetitionsPage'
+import ReportIssuesPage from '../pages/ReportIssuesPage'
+import PublicNoticesPage from '../pages/PublicNoticesPage'
+import LoginPage from '../pages/LoginPage'
 
 
 function App() {
@@ -20,6 +25,11 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route  path='/login' element={<LoginPage />} />
+            <Route  path='forums' element={<ForumsPage />}/>
+            <Route path='petitions' element={<PetitionsPage />} />
+            <Route path='report'  element={<ReportIssuesPage />} />
+            <Route  path='notices' element={<PublicNoticesPage />}/>
             {/* admin */}
             <Route path="/admin" element={<AdminDashboard />}>
           <Route index element={<Overview />} />
