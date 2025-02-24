@@ -23,7 +23,7 @@ const Home = () => {
               <div className="rounded-lg shadow-lg transform transition duration-200 hover:scale-105">
                 <Link
                   to="/register"
-                  className="w-full flex items-center justify-center px-8 py-4 border-2 border-transparent text-lg font-semibold rounded-lg text-primary-600 bg-white hover:bg-primary-50 md:text-xl md:px-12"
+                  className="w-full flex bg-gray-900  text-white items-center justify-center px-8 py-4 border-2 border-transparent text-lg font-semibold rounded-lg  md:text-xl md:px-12"
                 >
                   Get Started →
                 </Link>
@@ -31,7 +31,7 @@ const Home = () => {
               <div className="mt-4 rounded-lg shadow-lg sm:mt-0 sm:ml-4 transform transition duration-200 hover:scale-105">
                 <Link
                   to="/about"
-                  className="w-full  flex items-center justify-center px-8 py-4 border-2 border-white text-lg font-semibold rounded-lg text-black bg-transparent hover:bg-white/10 md:text-xl md:px-12"
+                  className="w-full  flex items-center justify-center px-8 py-4 border-2 border-white text-lg font-semibold rounded-lg text-black bg-transparent hover:bg-gray-900/50 hover:text-white md:text-xl md:px-12"
                 >
                   Learn More
                 </Link>
