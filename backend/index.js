@@ -7,6 +7,8 @@ const swaggerConfig = require("./swagger");
 const errorHandler = require("./middlewares/errorMiddleware");
 const logger = require("./middlewares/loggerMiddleware");
 const forumRoutes = require("./routes/forumRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
+const petitionRoutes = require("./routes/petitionRoutes");
 
 dotenv.config();
 
@@ -28,6 +30,10 @@ mongoose
 // Routes
 app.use("/api/users", userRoutes);
 app.use("/api/forums", forumRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/petitions", petitionRoutes);
+const issueRoutes = require("./routes/issueRoutes");
+app.use("/api/issues", issueRoutes);
 
 // Swagger Documentation
 swaggerConfig(app);
