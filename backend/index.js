@@ -6,6 +6,7 @@ const userRoutes = require("./routes/userRoutes");
 const swaggerConfig = require("./swagger");
 const errorHandler = require("./middlewares/errorMiddleware");
 const logger = require("./middlewares/loggerMiddleware");
+const forumRoutes = require("./routes/forumRoutes");
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ mongoose
 
 // Routes
 app.use("/api/users", userRoutes);
+app.use("/api/forums", forumRoutes);
 
 // Swagger Documentation
 swaggerConfig(app);

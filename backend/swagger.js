@@ -6,14 +6,14 @@ const swaggerOptions = {
   swaggerDefinition: {
     openapi: "3.0.0",
     info: {
-      title: "User API",
+      title: "Public Participation API",
       version: "1.0.0",
-      description: "API for managing users",
+      description: "API for public participation applications",
       contact: {
-        name: "Your Name",
-        email: "your.email@example.com",
+        name: "Wafula",
+        email: "jobwafulabg@gmail.com",
       },
-      servers: ["http://localhost:5000"], // Update with your server URL
+      servers: ["http://localhost:5000"],
     },
     components: {
       securitySchemes: {
@@ -21,6 +21,116 @@ const swaggerOptions = {
           type: "http",
           scheme: "bearer",
           bearerFormat: "JWT",
+        },
+      },
+      schemas: {
+        User: {
+          type: "object",
+          properties: {
+            _id: {
+              type: "string",
+            },
+            name: {
+              type: "string",
+            },
+            email: {
+              type: "string",
+            },
+            phone: {
+              type: "string",
+            },
+            role: {
+              type: "string",
+              enum: ["Citizen", "Government Official", "NGO", "Admin"],
+            },
+            profilePicture: {
+              type: "string",
+            },
+            isVerified: {
+              type: "boolean",
+            },
+            createdAt: {
+              type: "string",
+              format: "date-time",
+            },
+            updatedAt: {
+              type: "string",
+              format: "date-time",
+            },
+          },
+        },
+        Forum: {
+          type: "object",
+          properties: {
+            _id: {
+              type: "string",
+            },
+            title: {
+              type: "string",
+              description: "Title of the forum post",
+            },
+            content: {
+              type: "string",
+              description: "Content of the forum post",
+            },
+            author: {
+              type: "string",
+              description: "ID of the user who created the post",
+            },
+            comments: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  user: {
+                    type: "string",
+                    description: "ID of the user who commented",
+                  },
+                  content: {
+                    type: "string",
+                    description: "Content of the comment",
+                  },
+                  createdAt: {
+                    type: "string",
+                    format: "date-time",
+                    description: "Timestamp when the comment was created",
+                  },
+                  updatedAt: {
+                    type: "string",
+                    format: "date-time",
+                    description: "Timestamp when the comment was updated",
+                  },
+                },
+              },
+              description: "Array of comments on the forum post",
+            },
+            likes: {
+              type: "array",
+              items: {
+                type: "string",
+                description: "ID of the user who liked the post",
+              },
+              description: "Array of user IDs who liked the post",
+            },
+            tags: {
+              type: "array",
+              items: {
+                type: "string",
+                description: "Tag for categorizing the post",
+              },
+              description: "Array of tags for the forum post",
+            },
+            createdAt: {
+              type: "string",
+              format: "date-time",
+              description: "Timestamp when the post was created",
+            },
+            updatedAt: {
+              type: "string",
+              format: "date-time",
+              description: "Timestamp when the post was updated",
+            },
+          },
         },
       },
     },
