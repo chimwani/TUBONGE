@@ -9,6 +9,7 @@ const logger = require("./middlewares/loggerMiddleware");
 const forumRoutes = require("./routes/forumRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const petitionRoutes = require("./routes/petitionRoutes");
+const cors = require('cors');
 
 dotenv.config();
 
@@ -26,6 +27,11 @@ mongoose
   })
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.log(err));
+
+app.use(cors({
+  origin: 'http://localhost:5173', // Allow requests from this origin
+  credentials: true, // Allow cookies and credentials
+})); 
 
 // Routes
 app.use("/api/users", userRoutes);

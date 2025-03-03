@@ -6,8 +6,9 @@ import Footer from '../components/layout/Footer'
 function RegisterPage() {
   return (
     <div>
-       
+       <Header />
       <Register />
+      <Header />
       
     </div>
   )

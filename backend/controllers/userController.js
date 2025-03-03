@@ -6,6 +6,9 @@ const jwt = require("jsonwebtoken");
 // @desc    Register a new user
 // @route   POST /api/users/register
 // @access  Public
+// @desc    Register a new user
+// @route   POST /api/users/register
+// @access  Public
 exports.registerUser = async (req, res) => {
   try {
     const { name, email, phone, password, role } = req.body;
@@ -28,16 +31,20 @@ exports.registerUser = async (req, res) => {
     // Save user to database
     await user.save();
 
-    // Generate JWT token
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
+    // Return success response without a token
+    res.status(201).json({
+      message: "User registered successfully",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
     });
-
-    res.status(201).json({ token });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
-};
+};;
 
 // @desc    Login user
 // @route   POST /api/users/login
