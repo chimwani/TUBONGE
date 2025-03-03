@@ -4,25 +4,25 @@ import Footer from '../components/layout/Footer'
 const Home = () => {
   return (
     <><Header />
-    <div className="space-y-16 py-8">
+    <div className="space-y-8 py-4">
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-primary-700 to-primary-900 overflow-hidden">
         <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-20"></div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative">
           <div className="text-center">
-            <h1 className="text-5xl tracking-tight font-extrabold text-white sm:text-6xl md:text-7xl">
-              <span className="block bg-clip-text text-transparent bg-gradient-to-r from-white to-primary-200">Your Voice Matters</span>
-              <span className="block text-primary-100 mt-2">Shape Your Community</span>
+            <h1 className="text-4xl tracking-tight font-extrabold sm:text-5xl md:text-6xl">
+              <span className="block bg-clip-text bg-gradient-to-r from-white to-primary-200">Your Voice Matters</span>
+              <span className="block text-primary-100 mt-1">Shape Your Community</span>
             </h1>
-            <p className="mt-6 max-w-md mx-auto text-lg text-primary-100 sm:text-xl md:mt-8 md:text-2xl md:max-w-3xl">
+            <p className="mt-4 max-w-md mx-auto text-base text-primary-100 sm:text-lg md:max-w-2xl">
               Join our platform to participate in local decision-making, share your ideas,
               and make a real difference in your community.
             </p>
-            <div className="mt-8 max-w-md mx-auto sm:flex sm:justify-center md:mt-12">
+            <div className="mt-6 max-w-md mx-auto sm:flex sm:justify-center">
               <div className="rounded-lg shadow-lg transform transition duration-200 hover:scale-105">
                 <Link
                   to="/register"
-                  className="w-full flex bg-gray-900  text-white items-center justify-center px-8 py-4 border-2 border-transparent text-lg font-semibold rounded-lg  md:text-xl md:px-12"
+                  className="w-full flex bg-gray-900 text-white items-center justify-center px-6 py-3 border-2 border-transparent text-base font-semibold rounded-lg md:text-lg"
                 >
                   Get Started →
                 </Link>
@@ -30,7 +30,7 @@ const Home = () => {
               <div className="mt-4 rounded-lg shadow-lg sm:mt-0 sm:ml-4 transform transition duration-200 hover:scale-105">
                 <Link
                   to="/about"
-                  className="w-full  flex items-center justify-center px-8 py-4 border-2 border-white text-lg font-semibold rounded-lg text-black bg-transparent hover:bg-gray-900/50 hover:text-white md:text-xl md:px-12"
+                  className="w-full flex items-center justify-center px-6 py-3 border-2 border-white text-base font-semibold rounded-lg text-black bg-transparent hover:bg-gray-900/50 hover:text-white md:text-lg"
                 >
                   Learn More
                 </Link>
@@ -41,27 +41,27 @@ const Home = () => {
       </section>
 
       {/* Features Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-        <div className="text-center">
-          <h2 className="text-4xl font-extrabold text-gray-900 sm:text-5xl">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-400">
               Engage With Your Community
             </span>
           </h2>
-          <p className="mt-6 text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="mt-2 text-xl text-gray-600 max-w-2xl mx-auto">
             Everything you need to stay informed and make your voice heard.
           </p>
         </div>
 
-        <div className="mt-24 grid grid-cols-1 gap-12 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
           {features.map((feature) => (
             <div key={feature.title} className="relative group">
-              <div className="space-y-6 p-8 rounded-2xl bg-white shadow-xl transition-all duration-200 hover:shadow-2xl hover:-translate-y-1">
-                <div className="h-14 w-14 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center transform transition duration-200 group-hover:scale-110">
+              <div className="space-y-4 p-6 rounded-xl bg-white shadow-lg transition-all duration-200 hover:shadow-xl hover:-translate-y-1">
+                <div className="h-12 w-12 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center transform transition duration-200 group-hover:scale-110">
                   {feature.icon}
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900">{feature.title}</h3>
-                <p className="text-gray-600 text-lg">{feature.description}</p>
+                <h3 className="text-xl font-bold text-gray-900">{feature.title}</h3>
+                <p className="text-gray-600 text-base">{feature.description}</p>
               </div>
             </div>
           ))}
