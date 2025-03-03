@@ -1,17 +1,18 @@
-import React, { useState } from 'react';
-import { 
-  HiOutlineSearch, 
-  HiOutlinePlus,
+import React, { useState, useEffect } from 'react';
+import {
+  HiOutlineSearch,
   HiOutlineUserAdd,
   HiOutlineMail,
   HiOutlineBan,
-  HiOutlineCheck,
-  HiOutlineX,
-  HiOutlineKey
+  HiOutlineKey,
 } from 'react-icons/hi';
+import axios from 'axios'; // Import axios for making HTTP requests
 
 const Users = () => {
   const [selectedRole, setSelectedRole] = useState('all');
+  const [users, setUsers] = useState([]); // State to store users
+  const [loading, setLoading] = useState(true); // Loading state
+  const [error, setError] = useState(null); // Error state
 
   const roles = [
     { id: 'all', name: 'All Users' },
@@ -20,19 +21,34 @@ const Users = () => {
     { id: 'ngo', name: 'NGO Representatives' },
   ];
 
-  const users = [
-    {
-      id: 1,
-      name: "John Doe",
-      email: "john@example.com",
-      role: "citizen",
-      status: "active",
-      joinDate: "2024-01-15",
-      lastActive: "2024-03-10T10:00:00",
-      verified: true
-    },
-    // Add more user data here
-  ];
+  // Fetch users from the backend
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/users');
+        setUsers(response.data); // Set the fetched users
+        setLoading(false); // Set loading to false
+      } catch (err) {
+        setError(err.message); // Set error message
+        setLoading(false); // Set loading to false
+      }
+    };
+
+    fetchUsers();
+  }, []); // Empty dependency array ensures this runs only once on mount
+
+  // Filter users based on selected role
+  const filteredUsers = selectedRole === 'all'
+    ? users
+    : users.filter(user => user.role === selectedRole);
+
+  if (loading) {
+    return <div className="text-center py-6">Loading users...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center py-6 text-red-600">Error: {error}</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -105,8 +121,8 @@ const Users = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {users.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-50">
+              {filteredUsers.map((user) => (
+                <tr key={user._id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10">
@@ -173,7 +189,7 @@ const Users = () => {
               <div>
                 <p className="text-sm text-gray-700">
                   Showing <span className="font-medium">1</span> to <span className="font-medium">10</span> of{' '}
-                  <span className="font-medium">97</span> users
+                  <span className="font-medium">{filteredUsers.length}</span> users
                 </p>
               </div>
               <div>
