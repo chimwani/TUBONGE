@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom'; // Import useNavigate
 import { HiEye, HiEyeOff } from 'react-icons/hi';
-import axios from 'axios'; // Import axios
-
-
+import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -17,6 +17,7 @@ const Register = () => {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false); // Loading state
+  const navigate = useNavigate(); // Initialize useNavigate
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -83,24 +84,19 @@ const Register = () => {
 
       // Handle successful registration
       console.log('Registration successful:', response.data);
-      alert('Registration successful! Please log in.');
-      // Redirect to login page or clear the form
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        password: '',
-        confirmPassword: '',
-        role: 'Citizen',
-      });
+      toast.success('Registration successful! Please log in.');
+      // redirect to login page
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000); // Redirect after 2 seconds
     } catch (error) {
       // Handle errors
       if (axios.isAxiosError(error)) {
         console.error('Registration failed:', error.response?.data);
-        alert(`Registration failed: ${error.response?.data.message || 'An error occurred'}`);
+        toast.error(`Registration failed: ${error.response?.data?.message || 'An error occurred'}`);
       } else {
         console.error('Registration failed:', error);
-        alert('Registration failed: An unexpected error occurred');
+        toast.error('Registration failed: An unexpected error occurred');
       }
     } finally {
       setIsSubmitting(false);
@@ -109,7 +105,7 @@ const Register = () => {
 
   return (
     <div>
-    
+      <ToastContainer /> {/* Add this line */}
       <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-4xl">
           <h2 className="text-center text-3xl font-bold text-gray-900">
@@ -288,7 +284,6 @@ const Register = () => {
           </p>
         </div>
       </div>
-      
     </div>
   );
 };
