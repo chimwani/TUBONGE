@@ -90,8 +90,16 @@ const PublicNotices = () => {
         </div>
       </div>
 
-      {/* Notices Table */}
+      {/* Notices Table with Create Notice Button */}
       <div className="bg-white shadow-sm rounded-lg overflow-hidden">
+        {/* Create Notice Button */}
+        <div className="p-4 flex justify-end">
+          <button className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-gray-900 bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+            <HiOutlinePlus className="mr-2 h-5 w-5" />
+            Create Notice
+          </button>
+        </div>
+
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">

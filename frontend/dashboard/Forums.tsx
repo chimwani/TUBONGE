@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { 
-  HiOutlineSearch, 
+import {
+  HiOutlineSearch,
   HiOutlinePlus,
   HiOutlineTrash,
   HiOutlinePencil,
   HiOutlineEye,
   HiOutlineCheck,
-  HiOutlineX 
+  HiOutlineX,
 } from 'react-icons/hi';
 
 const Forums = () => {
@@ -20,7 +20,7 @@ const Forums = () => {
       participants: 234,
       status: "active",
       lastActivity: "2024-03-10T10:00:00",
-      responses: 56
+      responses: 56,
     },
     // ... more forum data
   ];
@@ -31,7 +31,7 @@ const Forums = () => {
       <div className="sm:flex sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold text-gray-900">Forums Management</h1>
         <div className="mt-3 sm:mt-0">
-          <button className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+          <button className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
             <HiOutlinePlus className="mr-2 h-5 w-5" />
             New Forum
           </button>
@@ -81,8 +81,16 @@ const Forums = () => {
         </div>
       </div>
 
-      {/* Forums Table */}
+      {/* Forums Table with Create Forum Button */}
       <div className="bg-white shadow-sm rounded-lg overflow-hidden">
+        {/* Create Forum Button */}
+        <div className="p-4 flex justify-end">
+          <button className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+            <HiOutlinePlus className="mr-2 h-5 w-5" />
+            Create Forum
+          </button>
+        </div>
+
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -123,11 +131,13 @@ const Forums = () => {
                     {forum.participants}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      forum.status === 'active'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-gray-100 text-gray-800'
-                    }`}>
+                    <span
+                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        forum.status === 'active'
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-gray-100 text-gray-800'
+                      }`}
+                    >
                       {forum.status}
                     </span>
                   </td>
@@ -165,12 +175,16 @@ const Forums = () => {
             <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm text-gray-700">
-                  Showing <span className="font-medium">1</span> to <span className="font-medium">10</span> of{' '}
+                  Showing <span className="font-medium">1</span> to{' '}
+                  <span className="font-medium">10</span> of{' '}
                   <span className="font-medium">97</span> results
                 </p>
               </div>
               <div>
-                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                <nav
+                  className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                  aria-label="Pagination"
+                >
                   <button className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
                     Previous
                   </button>
