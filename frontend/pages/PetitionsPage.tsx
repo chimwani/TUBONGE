@@ -1,78 +1,134 @@
-import { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import axios from 'axios';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
+import { AuthContext } from '../components/AuthContext'; // Import AuthContext
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { ToastContainer, toast } from 'react-toastify'; // Import react-toastify
+import 'react-toastify/dist/ReactToastify.css'; // Import toast styles
 
 interface Petition {
   id: number;
   title: string;
   description: string;
-  creator: string;
-  signatures: number;
-  timestamp: string;
+  goal: number; // Updated from signatures to goal
+  tags: string[]; // Added tags
+  creator?: string; // Optional, assuming backend might return it
+  signatures?: number; // Optional, assuming backend tracks this separately
+  timestamp: string; // Assuming backend returns this
 }
 
 export default function PetitionsPage() {
-  const [petitions, setPetitions] = useState<Petition[]>([
-    {
-      id: 3,
-      title: "Increase Funding for Space Exploration",
-      description: "We urge the government to allocate more resources to space programs to accelerate human exploration of the cosmos.",
-      creator: "JohnSmith",
-      signatures: 42,
-      timestamp: "Feb 24, 2025, 11:00 AM",
-    },
-    {
-      id: 2,
-      title: "Protect Local Wildlife Habitats",
-      description: "Demand stronger regulations to preserve natural habitats from urban development.",
-      creator: "JaneDoe",
-      signatures: 78,
-      timestamp: "Feb 24, 2025, 10:45 AM",
-    },
-    {
-      id: 1,
-      title: "Welcome to the Petitions Page",
-      description: "Start a petition to make your voice heard! This is an example petition to get us started.",
-      creator: "Admin",
-      signatures: 5,
-      timestamp: "Feb 24, 2025, 9:30 AM",
-    },
-  ]);
-  const [creator, setCreator] = useState('');
+  const [petitions, setPetitions] = useState<Petition[]>([]);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [goal, setGoal] = useState<number>(0); // Changed from creator to goal
+  const [tags, setTags] = useState(''); // Added tags
+  const [loading, setLoading] = useState(true);
+  const { token, isAuthenticated } = useContext(AuthContext); // Get token and auth status
+  const navigate = useNavigate();
 
-  const addPetition = () => {
-    if (creator.trim() && title.trim() && description.trim()) {
-      const newPetition: Petition = {
-        id: petitions.length + 1,
-        title,
-        description,
-        creator,
-        signatures: 0,
-        timestamp: new Date().toLocaleString(),
-      };
-      setPetitions([newPetition, ...petitions]);
-      setCreator('');
+  // Fetch petitions from the API
+  useEffect(() => {
+    const fetchPetitions = async () => {
+      if (!isAuthenticated) {
+        navigate('/login');
+        return;
+      }
+
+      try {
+        const response = await axios.get('http://localhost:5000/api/petitions', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setPetitions(response.data);
+        setLoading(false);
+      } catch (err) {
+        if (axios.isAxiosError(err) && err.response?.status === 401) {
+          toast.error('Unauthorized. Please log in again.');
+          navigate('/login');
+        } else {
+          toast.error('Failed to fetch petitions. Please try again later.');
+        }
+        setLoading(false);
+      }
+    };
+
+    fetchPetitions();
+  }, [token, isAuthenticated, navigate]);
+
+  // Add a new petition
+  const addPetition = async () => {
+    if (!title.trim() || !description.trim() || goal <= 0) {
+      toast.error('Please fill in all fields and set a valid goal!');
+      return;
+    }
+
+    const newPetition = {
+      title,
+      description,
+      goal,
+      tags: tags.split(',').map((tag) => tag.trim()).filter((tag) => tag), // Convert to array, remove empty tags
+    };
+
+    try {
+      const response = await axios.post('http://localhost:5000/api/petitions', newPetition, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setPetitions([response.data, ...petitions]); // Assuming backend returns the created petition
       setTitle('');
       setDescription('');
-    } else {
-      alert("Please fill in all fields to create a petition!");
+      setGoal(0);
+      setTags('');
+      toast.success('Petition created successfully!');
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 401) {
+        toast.error('Unauthorized. Please log in again.');
+        navigate('/login');
+      } else {
+        toast.error('Failed to create petition. Please try again.');
+      }
     }
   };
 
-  const signPetition = (id: number) => {
-    setPetitions(
-      petitions.map((petition) =>
-        petition.id === id ? { ...petition, signatures: petition.signatures + 1 } : petition
-      )
-    );
+  // Sign a petition (assuming a separate endpoint like PUT /api/petitions/:id/sign)
+  const signPetition = async (id: number) => {
+    try {
+      const response = await axios.put(
+        `http://localhost:5000/api/petitions/${id}/sign`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setPetitions(
+        petitions.map((petition) =>
+          petition.id === id ? { ...petition, signatures: response.data.signatures } : petition
+        )
+      );
+      toast.success('Petition signed successfully!');
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 401) {
+        toast.error('Unauthorized. Please log in again.');
+        navigate('/login');
+      } else {
+        toast.error('Failed to sign petition. Please try again.');
+      }
+    }
   };
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Header />
-      
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="bg-white rounded-xl shadow-lg overflow-hidden max-w-4xl mx-auto">
           {/* Header */}
@@ -93,13 +149,6 @@ export default function PetitionsPage() {
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Create a New Petition</h2>
             <input
               type="text"
-              placeholder="Your Name"
-              className="w-full p-3 mb-4 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
-              value={creator}
-              onChange={(e) => setCreator(e.target.value)}
-            />
-            <input
-              type="text"
               placeholder="Petition Title"
               className="w-full p-3 mb-4 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
               value={title}
@@ -111,6 +160,20 @@ export default function PetitionsPage() {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             ></textarea>
+            <input
+              type="number"
+              placeholder="Signature Goal"
+              className="w-full p-3 mb-4 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
+              value={goal}
+              onChange={(e) => setGoal(parseInt(e.target.value) || 0)}
+            />
+            <input
+              type="text"
+              placeholder="Tags (comma-separated)"
+              className="w-full p-3 mb-4 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
+              value={tags}
+              onChange={(e) => setTags(e.target.value)}
+            />
             <button
               onClick={addPetition}
               className="mt-4 bg-gray-900 text-white py-2 px-6 rounded-lg hover:bg-blue-700 transition duration-200 font-medium"
@@ -132,14 +195,34 @@ export default function PetitionsPage() {
                     <h3 className="text-xl font-semibold text-gray-900">{petition.title}</h3>
                     <p className="mt-2 text-gray-700">{petition.description}</p>
                     <div className="mt-3 text-sm text-gray-600">
-                      <p>
-                        <span className="text-gray-500">Created by</span>{' '}
-                        <span className="font-medium">{petition.creator}</span>{' '}
-                        <span className="text-gray-500">({petition.timestamp})</span>
+                      {petition.creator && (
+                        <p>
+                          <span className="text-gray-500">Created by</span>{' '}
+                          <span className="font-medium">{petition.creator}</span>{' '}
+                          <span className="text-gray-500">({petition.timestamp})</span>
+                        </p>
+                      )}
+                      <p className="mt-1">
+                        <span className="text-gray-500">Goal:</span>{' '}
+                        <span className="font-medium">{petition.goal}</span>
+                        {petition.signatures !== undefined && (
+                          <>
+                            {' '}
+                            <span className="text-gray-500">• Signatures:</span>{' '}
+                            <span className="text-blue-600 font-medium">{petition.signatures}</span>
+                          </>
+                        )}
                       </p>
                       <p className="mt-1">
-                        <span className="text-gray-500">Signatures:</span>{' '}
-                        <span className="text-blue-600 font-medium">{petition.signatures}</span>
+                        <span className="text-gray-500">Tags:</span>{' '}
+                        {petition.tags.map((tag, index) => (
+                          <span
+                            key={index}
+                            className="inline-block px-2 py-1 mr-2 text-xs font-semibold bg-blue-100 text-blue-800 rounded-full"
+                          >
+                            {tag}
+                          </span>
+                        ))}
                       </p>
                     </div>
                   </div>
@@ -155,11 +238,20 @@ export default function PetitionsPage() {
           </div>
         </div>
       </main>
-      
-      {/* Full-width footer */}
       <div className="w-full mt-8">
         <Footer />
       </div>
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </div>
   );
 }
