@@ -16,6 +16,7 @@ import ReportIssuesPage from '../pages/ReportIssuesPage';
 import PublicNoticesPage from '../pages/PublicNoticesPage';
 import LoginPage from '../pages/LoginPage';
 import ProtectedRoute from '../components/ProtectedRoutes';
+import PublicNotices from '../dashboard/PublicNotices'
 
 function App() {
   return (
@@ -37,11 +38,13 @@ function App() {
                 <Route path="/report" element={<ReportIssuesPage />} />
                 <Route path="/notices" element={<PublicNoticesPage />} />
                 <Route path="/admin" element={<AdminDashboard />}>
+                
                   <Route index element={<Overview />} />
                   <Route path="forums" element={<Forums />} />
                   <Route path="users" element={<Users />} />
                   <Route path="budget" element={<Budget />} />
                   <Route path="documents" element={<Documents />} />
+                  <Route path="notices" element={<PublicNotices />} />
                 </Route>
               </Route>
             </Routes>
