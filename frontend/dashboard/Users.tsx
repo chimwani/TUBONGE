@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   HiOutlineSearch,
   HiOutlineUserAdd,
@@ -6,53 +6,85 @@ import {
   HiOutlineBan,
   HiOutlineKey,
 } from 'react-icons/hi';
-import axios from 'axios'; // Import axios for making HTTP requests
+import axios from 'axios';
+import { AuthContext } from '../components/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+interface User {
+  _id: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: 'Citizen' | 'Government' | 'NGO' | 'Admin'; // Adjust roles based on your backend
+  profilePicture: string;
+  isVerified: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
 
 const Users = () => {
   const [selectedRole, setSelectedRole] = useState('all');
-  const [users, setUsers] = useState([]); // State to store users
-  const [loading, setLoading] = useState(true); // Loading state
-  const [error, setError] = useState(null); // Error state
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { token, isAuthenticated } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   const roles = [
     { id: 'all', name: 'All Users' },
-    { id: 'citizen', name: 'Citizens' },
-    { id: 'government', name: 'Government Officials' },
-    { id: 'ngo', name: 'NGO Representatives' },
+    { id: 'Citizen', name: 'Citizens' },
+    { id: 'Government', name: 'Government Officials' },
+    { id: 'NGO', name: 'NGO Representatives' },
+    { id: 'Admin', name: 'Admins' },
   ];
 
-  // Fetch users from the backend
   useEffect(() => {
     const fetchUsers = async () => {
+      if (!isAuthenticated) {
+        navigate('/login');
+        return;
+      }
+
       try {
-        const response = await axios.get('http://localhost:5000/api/users');
-        setUsers(response.data); // Set the fetched users
-        setLoading(false); // Set loading to false
+        const response = await axios.get('http://localhost:5000/api/users', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setUsers(response.data);
+        setLoading(false);
       } catch (err) {
-        setError(err.message); // Set error message
-        setLoading(false); // Set loading to false
+        if (axios.isAxiosError(err)) {
+          if (err.response?.status === 401) {
+            toast.error('Unauthorized. Please log in again.');
+            navigate('/login');
+          } else if (err.response?.status === 403) {
+            toast.error('Access denied: Admin privileges required.');
+            navigate('/'); // Redirect to home since only admins can access
+          } else {
+            toast.error(`Error: ${err.response?.data?.message || 'Failed to fetch users.'}`);
+          }
+        } else {
+          toast.error(`Error: ${err.message || 'An unexpected error occurred.'}`);
+        }
+        setLoading(false);
       }
     };
 
     fetchUsers();
-  }, []); // Empty dependency array ensures this runs only once on mount
+  }, [token, isAuthenticated, navigate]);
 
-  // Filter users based on selected role
   const filteredUsers = selectedRole === 'all'
     ? users
-    : users.filter(user => user.role === selectedRole);
+    : users.filter((user) => user.role === selectedRole);
 
   if (loading) {
     return <div className="text-center py-6">Loading users...</div>;
   }
 
-  if (error) {
-    return <div className="text-center py-6 text-red-600">Error: {error}</div>;
-  }
-
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="sm:flex sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold text-gray-900">User Management</h1>
         <div className="mt-3 sm:mt-0">
@@ -63,10 +95,8 @@ const Users = () => {
         </div>
       </div>
 
-      {/* Filters and Search */}
       <div className="bg-white rounded-lg shadow-sm p-4">
         <div className="space-y-4 sm:flex sm:items-center sm:space-y-0 sm:space-x-4">
-          {/* Role Filter */}
           <div className="flex space-x-2">
             {roles.map((role) => (
               <button
@@ -82,8 +112,6 @@ const Users = () => {
               </button>
             ))}
           </div>
-
-          {/* Search */}
           <div className="relative flex-1 max-w-xs">
             <input
               type="text"
@@ -97,7 +125,6 @@ const Users = () => {
         </div>
       </div>
 
-      {/* Users Table */}
       <div className="bg-white shadow-sm rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -110,10 +137,13 @@ const Users = () => {
                   Role
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
+                  Phone
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Last Active
+                  Verified
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Created At
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
@@ -128,7 +158,7 @@ const Users = () => {
                       <div className="flex-shrink-0 h-10 w-10">
                         <img
                           className="h-10 w-10 rounded-full"
-                          src={`https://ui-avatars.com/api/?name=${user.name}&background=random`}
+                          src={user.profilePicture || `https://ui-avatars.com/api/?name=${user.name}&background=random`}
                           alt=""
                         />
                       </div>
@@ -139,23 +169,32 @@ const Users = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      user.role === 'government' ? 'bg-blue-100 text-blue-800' :
-                      user.role === 'ngo' ? 'bg-green-100 text-green-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
+                    <span
+                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        user.role === 'Government'
+                          ? 'bg-blue-100 text-blue-800'
+                          : user.role === 'NGO'
+                          ? 'bg-green-100 text-green-800'
+                          : user.role === 'Admin'
+                          ? 'bg-purple-100 text-purple-800'
+                          : 'bg-gray-100 text-gray-800'
+                      }`}
+                    >
                       {user.role}
                     </span>
                   </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.phone}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      user.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`}>
-                      {user.status}
+                    <span
+                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        user.isVerified ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}
+                    >
+                      {user.isVerified ? 'Verified' : 'Not Verified'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(user.lastActive).toLocaleDateString()}
+                    {new Date(user.createdAt).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button className="text-primary-600 hover:text-primary-900 mx-2">
@@ -174,7 +213,6 @@ const Users = () => {
           </table>
         </div>
 
-        {/* Pagination */}
         <div className="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
           <div className="flex items-center justify-between">
             <div className="flex-1 flex justify-between sm:hidden">
@@ -188,12 +226,16 @@ const Users = () => {
             <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm text-gray-700">
-                  Showing <span className="font-medium">1</span> to <span className="font-medium">10</span> of{' '}
+                  Showing <span className="font-medium">1</span> to{' '}
+                  <span className="font-medium">10</span> of{' '}
                   <span className="font-medium">{filteredUsers.length}</span> users
                 </p>
               </div>
               <div>
-                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                <nav
+                  className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                  aria-label="Pagination"
+                >
                   {/* Add pagination buttons here */}
                 </nav>
               </div>
@@ -201,6 +243,18 @@ const Users = () => {
           </div>
         </div>
       </div>
+
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </div>
   );
 };

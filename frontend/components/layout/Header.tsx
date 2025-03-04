@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useContext } from 'react'; // Changed useState to useContext
 import { Link } from 'react-router-dom';
 import { Disclosure } from '@headlessui/react';
 import { HiMenu, HiX } from 'react-icons/hi';
+import { AuthContext } from '../AuthContext'; // Import AuthContext
 
 const navigation = [
   { name: 'Home', href: '/' },
@@ -12,7 +13,11 @@ const navigation = [
 ];
 
 const Header: React.FC = () => {
-  const [isAuthenticated] = useState(false); // Replace with actual auth state
+  const { isAuthenticated, logout } = useContext(AuthContext); // Use AuthContext instead of local state
+
+  const handleLogout = () => {
+    logout(); // Call the logout function from AuthContext
+  };
 
   return (
     <Disclosure as="nav" className="bg-gray-900 text-white shadow-md sticky top-0 z-50">
@@ -44,9 +49,20 @@ const Header: React.FC = () => {
 
               <div className="hidden sm:ml-6 sm:flex sm:items-center">
                 {isAuthenticated ? (
-                  <button className="bg-gradient-to-r from-primary-600 to-primary-500 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:shadow-lg hover:shadow-primary-500/20 transition-all duration-200 hover:-translate-y-0.5">
-                    Dashboard
-                  </button>
+                  <div className="space-x-3">
+                    <Link
+                      to="/dashboard"
+                      className="bg-gradient-to-r from-primary-600 to-primary-500 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:shadow-lg hover:shadow-primary-500/20 transition-all duration-200 hover:-translate-y-0.5"
+                    >
+                      Dashboard
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="text-white hover:text-primary-100 px-4 py-2.5 rounded-lg text-sm font-medium border-2 border-transparent hover:border-primary-100 transition-all duration-200"
+                    >
+                      Logout
+                    </button>
+                  </div>
                 ) : (
                   <div className="space-x-3">
                     <Link
@@ -88,7 +104,22 @@ const Header: React.FC = () => {
                   {item.name}
                 </Link>
               ))}
-              {!isAuthenticated && (
+              {isAuthenticated ? (
+                <div className="mt-4 space-y-2 px-4 pb-3">
+                  <Link
+                    to="/dashboard"
+                    className="block w-full text-center bg-gradient-to-r from-primary-600 to-primary-500 text-white py-2.5 rounded-lg text-base font-medium hover:shadow-lg hover:shadow-primary-500/20 transition-all duration-200"
+                  >
+                    Dashboard
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="block w-full text-center text-white py-2.5 rounded-lg text-base font-medium border-2 border-transparent hover:border-primary-100 transition-all duration-200"
+                  >
+                    Logout
+                  </button>
+                </div>
+              ) : (
                 <div className="mt-4 space-y-2 px-4 pb-3">
                   <Link
                     to="/login"
