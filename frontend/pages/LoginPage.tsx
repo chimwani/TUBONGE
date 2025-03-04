@@ -1,22 +1,49 @@
-import React from 'react';
-import { useState } from 'react';
+import React, { useState, useContext } from 'react';
+import axios from 'axios';
+import { AuthContext } from '../components/AuthContext';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 export default function LoginPage() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const { login } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const location = useLocation(); // Added to get the previous route
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (username.trim() && password.trim()) {
-      // Placeholder for actual login logic
-      alert(`Logging in with username: ${username}`);
-      setUsername('');
+
+    if (!email.trim() || !password.trim()) {
+      setError('Please enter both email and password.');
+      return;
+    }
+
+    try {
+      const response = await axios.post('http://localhost:5000/api/users/login', {
+        email,
+        password,
+      });
+
+      const token = response.data.token;
+
+      login(token);
+
+      setEmail('');
       setPassword('');
-    } else {
-      alert('Please enter both username and password.');
+      setError('');
+
+      // Get the previous route from location.state, fallback to '/' if not available
+      const from = location.state?.from?.pathname || '/';
+      navigate(from, { replace: true }); // Redirect to previous route
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message || 'Login failed. Please try again.');
+      } else {
+        setError('An unexpected error occurred.');
+      }
     }
   };
 
@@ -25,26 +52,25 @@ export default function LoginPage() {
       <Header />
       <div className="flex-grow flex items-center justify-center p-6 bg-gray-50">
         <div className="max-w-md w-full bg-white rounded-xl shadow-lg overflow-hidden">
-          {/* Header - Centered */}
           <div className="p-6 pb-0 text-center">
             <h1 className="text-3xl font-bold text-gray-900">Login</h1>
             <p className="text-gray-500 text-sm mt-1">Access your civic engagement account.</p>
           </div>
-          
-          {/* Login Form */}
+
           <div className="p-6">
+            {error && <div className="mb-4 text-red-500 text-sm">{error}</div>}
             <form onSubmit={handleLogin}>
               <div className="mb-4">
-                <label htmlFor="username" className="block text-gray-700 font-medium mb-2">
-                  Username
+                <label htmlFor="email" className="block text-gray-700 font-medium mb-2">
+                  Email
                 </label>
                 <input
-                  type="text"
-                  id="username"
-                  placeholder="Enter your username"
+                  type="email"
+                  id="email"
+                  placeholder="Enter your email"
                   className="w-full p-3 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
               <div className="mb-6">
@@ -67,8 +93,7 @@ export default function LoginPage() {
                 Login
               </button>
             </form>
-            
-            {/* Additional Links */}
+
             <div className="mt-6 text-center text-sm">
               <a
                 href="#"

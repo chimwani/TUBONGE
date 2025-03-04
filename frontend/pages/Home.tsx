@@ -9,7 +9,7 @@ const Home = () => {
       <Header />
       <div className="space-y-8 py-4">
         {/* Hero Section */}
-        <section className="relative  bg-white overflow-hidden">
+        <section className="relative bg-white overflow-hidden">
           <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-20"></div>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
@@ -46,9 +46,9 @@ const Home = () => {
               {/* Image Content */}
               <div className="hidden lg:block h-full w-full">
                 <img
-                  src="/pp.jpeg" // Replace with your image path
+                  src="/pp.jpeg"
                   alt="Community Engagement"
-                  className=" h-full w-full transform transition "
+                  className="h-full w-full transform transition"
                 />
               </div>
             </div>
@@ -70,7 +70,11 @@ const Home = () => {
 
           <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
             {features.map((feature) => (
-              <div key={feature.title} className="relative group">
+              <Link
+                key={feature.title}
+                to={feature.route} // Use the route from the feature object
+                className="relative group"
+              >
                 <div className="space-y-4 p-6 rounded-xl bg-white shadow-lg transition-all duration-200 hover:shadow-xl hover:-translate-y-1">
                   <div className="h-12 w-12 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center transform transition duration-200 group-hover:scale-110">
                     {feature.icon}
@@ -78,7 +82,7 @@ const Home = () => {
                   <h3 className="text-xl font-bold text-gray-900">{feature.title}</h3>
                   <p className="text-gray-600 text-base">{feature.description}</p>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </section>
@@ -92,6 +96,7 @@ const features = [
   {
     title: 'Community Forums',
     description: 'Engage in meaningful discussions about local issues and initiatives.',
+    route: '/forums', // Added route
     icon: (
       <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
@@ -101,6 +106,7 @@ const features = [
   {
     title: 'Public Polls',
     description: 'Vote on important community decisions and see real-time results.',
+    route: '/polls', // Added route (changed from petitions to polls to match title)
     icon: (
       <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -110,6 +116,7 @@ const features = [
   {
     title: 'Issue Reporting',
     description: 'Report local issues and track their resolution progress.',
+    route: '/report', // Added route
     icon: (
       <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
