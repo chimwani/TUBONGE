@@ -40,6 +40,10 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/petitions", petitionRoutes);
 const issueRoutes = require("./routes/issueRoutes");
 app.use("/api/issues", issueRoutes);
+// api health
+app.get('/',(req,res)=>{
+  res.send("api running")
+})
 
 // Swagger Documentation
 swaggerConfig(app);
