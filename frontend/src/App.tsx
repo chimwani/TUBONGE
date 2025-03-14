@@ -1,7 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from '../components/AuthContext'; // Import the AuthProvider
-import Header from '../components/layout/Header';
-import Footer from '../components/layout/Footer';
 import Home from '../pages/Home';
 import RegisterPage from '../pages/RegisterPage';
 import Overview from '../dashboard/Overview';
@@ -17,6 +15,7 @@ import PublicNoticesPage from '../pages/PublicNoticesPage';
 import LoginPage from '../pages/LoginPage';
 import ProtectedRoute from '../components/ProtectedRoutes';
 import PublicNotices from '../dashboard/PublicNotices'
+import PollsPage from '../pages/PollsPage'
 
 function App() {
   return (
@@ -35,6 +34,7 @@ function App() {
               <Route element={<ProtectedRoute />}>
                 <Route path="/forums" element={<ForumsPage />} />
                 <Route path="/petitions" element={<PetitionsPage />} />
+                <Route path='/polls' element={<PollsPage />} />
                 <Route path="/report" element={<ReportIssuesPage />} />
                 <Route path="/notices" element={<PublicNoticesPage />} />
                 <Route path="/admin" element={<AdminDashboard />}>
