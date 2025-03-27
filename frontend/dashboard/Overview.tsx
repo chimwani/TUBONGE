@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   HiUsers,
   HiDocumentText,
@@ -6,8 +6,6 @@ import {
   HiClipboardList,
 } from 'react-icons/hi';
 import axios from 'axios';
-import { AuthContext } from '../components/AuthContext';
-import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -16,80 +14,55 @@ const Overview = () => {
   const [recentForums, setRecentForums] = useState([]);
   const [recentIssues, setRecentIssues] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { token, isAuthenticated } = useContext(AuthContext);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!isAuthenticated) {
-        navigate('/login');
-        return;
-      }
-
       try {
-        // Fetch users and transform to stats
-        const usersResponse = await axios.get('http://localhost:5000/api/users', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const forumsResponse = await axios.get('http://localhost:5000/api/forums', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const issuesResponse = await axios.get('http://localhost:5000/api/issues', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        // Remove authorization headers
+        const usersResponse = await axios.get('http://localhost:5000/api/users');
+        const forumsResponse = await axios.get('http://localhost:5000/api/forums');
+        const issuesResponse = await axios.get('http://localhost:5000/api/issues');
 
         // Transform data into stats format
         const transformedStats = [
           {
             name: 'Total Users',
             value: usersResponse.data.length.toString(),
-            change: '+12%', // This could be calculated if you have historical data
+            change: '+12%',
             icon: HiUsers,
           },
           {
             name: 'Active Forums',
-            value: forumsResponse.data.filter((f) => f.status === 'active').length.toString(), // Assuming status field exists
+            value: forumsResponse.data.filter((f) => f.status === 'active').length.toString(),
             change: '+4%',
             icon: HiChat,
           },
           {
             name: 'Pending Issues',
-            value: issuesResponse.data.filter((i) => i.status === 'Open').length.toString(), // Assuming status field exists
+            value: issuesResponse.data.filter((i) => i.status === 'Open').length.toString(),
             change: '-8%',
             icon: HiClipboardList,
           },
           {
             name: 'Documents',
-            value: '438', // Placeholder; replace with actual endpoint if available
+            value: '438', // Placeholder
             change: '+17%',
             icon: HiDocumentText,
           },
         ];
 
         setStats(transformedStats);
-        setRecentForums(forumsResponse.data.slice(0, 5)); // Take top 5 recent forums
-        setRecentIssues(issuesResponse.data.slice(0, 5)); // Take top 5 recent issues
+        setRecentForums(forumsResponse.data.slice(0, 5));
+        setRecentIssues(issuesResponse.data.slice(0, 5));
         setLoading(false);
       } catch (err) {
-        if (axios.isAxiosError(err)) {
-          if (err.response?.status === 401) {
-            toast.error('Unauthorized. Please log in again.');
-            navigate('/login');
-          } else if (err.response?.status === 403) {
-            toast.error('Access denied: Admin privileges required.');
-            navigate('/');
-          } else {
-            toast.error(`Error: ${err.response?.data?.message || 'Failed to fetch data.'}`);
-          }
-        } else {
-          toast.error(`Error: ${err.message || 'An unexpected error occurred.'}`);
-        }
+        toast.error(`Error: ${err.message || 'Failed to fetch data.'}`);
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [token, isAuthenticated, navigate]);
+  }, []); // Removed dependencies
 
   if (loading) {
     return <div className="text-center py-6">Loading dashboard data...</div>;
@@ -152,7 +125,6 @@ const Overview = () => {
                       <div className="flex items-center">
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-gray-900 truncate">{forum.title}</p>
-                          {/* Adjust based on actual forum schema */}
                           <p className="text-sm text-gray-500">
                             {forum.tags ? forum.tags.join(', ') : 'No tags'}
                           </p>

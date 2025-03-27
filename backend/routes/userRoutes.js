@@ -206,7 +206,7 @@ router.delete("/me", protect, userController.deleteUserProfile);
  *       500:
  *         description: Server error
  */
-router.get("/", protect, authorize("Admin"), userController.getAllUsers);
+router.get("/", userController.getAllUsers);
 
 /**
  * @swagger

@@ -55,7 +55,7 @@ const { protect } = require("../middlewares/authMiddleware");
  *       500:
  *         description: Server error
  */
-router.post("/", protect, notificationController.createNotification);
+router.post("/", notificationController.createNotification);
 
 /**
  * @swagger
@@ -79,7 +79,7 @@ router.post("/", protect, notificationController.createNotification);
  *       500:
  *         description: Server error
  */
-router.get("/", protect, notificationController.getNotifications);
+router.get("/", notificationController.getNotifications);
 
 /**
  * @swagger
@@ -110,7 +110,7 @@ router.get("/", protect, notificationController.getNotifications);
  *       500:
  *         description: Server error
  */
-router.put("/:id/read", protect, notificationController.markAsRead);
+router.put("/:id/read",notificationController.markAsRead);
 
 /**
  * @swagger
@@ -137,6 +137,6 @@ router.put("/:id/read", protect, notificationController.markAsRead);
  *       500:
  *         description: Server error
  */
-router.delete("/:id", protect, notificationController.deleteNotification);
+router.delete("/:id", notificationController.deleteNotification);
 
 module.exports = router;

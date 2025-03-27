@@ -1,29 +1,56 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   HiOutlineSearch,
   HiOutlinePlus,
   HiOutlineTrash,
   HiOutlinePencil,
   HiOutlineEye,
-  HiOutlineCheck,
-  HiOutlineX,
 } from 'react-icons/hi';
+import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+interface Forum {
+  id: number;
+  title: string;
+  category: string;
+  participants: number;
+  status: string;
+  lastActivity: string;
+  responses: number;
+}
 
 const Forums = () => {
   const [activeTab, setActiveTab] = useState('active');
+  const [forums, setForums] = useState<Forum[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
 
-  const forums = [
-    {
-      id: 1,
-      title: "City Infrastructure Development",
-      category: "Urban Planning",
-      participants: 234,
-      status: "active",
-      lastActivity: "2024-03-10T10:00:00",
-      responses: 56,
-    },
-    // ... more forum data
-  ];
+  useEffect(() => {
+    const fetchForums = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/forums');
+        setForums(response.data);
+        setLoading(false);
+      } catch (error) {
+        toast.error('Failed to fetch forums');
+        setLoading(false);
+      }
+    };
+
+    fetchForums();
+  }, []);
+
+  const filteredForums = forums.filter(forum => {
+    const matchesTab = activeTab === 'all' || forum.status === activeTab;
+    const matchesSearch = forum.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                         forum.category.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesTab && matchesSearch;
+  });
+
+  if (loading) {
+    return <div className="text-center py-6">Loading forums...</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -31,7 +58,7 @@ const Forums = () => {
       <div className="sm:flex sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold text-gray-900">Forums Management</h1>
         <div className="mt-3 sm:mt-0">
-          <button className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+          <button className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
             <HiOutlinePlus className="mr-2 h-5 w-5" />
             New Forum
           </button>
@@ -63,6 +90,16 @@ const Forums = () => {
             >
               Archived
             </button>
+            <button
+              onClick={() => setActiveTab('all')}
+              className={`px-4 py-2 rounded-md text-sm font-medium ${
+                activeTab === 'all'
+                  ? 'bg-primary-50 text-primary-600'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              All Forums
+            </button>
           </div>
 
           {/* Search */}
@@ -72,6 +109,8 @@ const Forums = () => {
                 type="text"
                 placeholder="Search forums..."
                 className="block w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <HiOutlineSearch className="h-5 w-5 text-gray-400" />
@@ -81,16 +120,8 @@ const Forums = () => {
         </div>
       </div>
 
-      {/* Forums Table with Create Forum Button */}
+      {/* Forums Table */}
       <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-        {/* Create Forum Button */}
-        <div className="p-4 flex justify-end">
-          <button className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
-            <HiOutlinePlus className="mr-2 h-5 w-5" />
-            Create Forum
-          </button>
-        </div>
-
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -116,96 +147,62 @@ const Forums = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {forums.map((forum) => (
-                <tr key={forum.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{forum.title}</div>
-                    <div className="text-sm text-gray-500">{forum.responses} responses</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                      {forum.category}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {forum.participants}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        forum.status === 'active'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-gray-100 text-gray-800'
-                      }`}
-                    >
-                      {forum.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(forum.lastActivity).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button className="text-primary-600 hover:text-primary-900 mx-2">
-                      <HiOutlineEye className="h-5 w-5" />
-                    </button>
-                    <button className="text-blue-600 hover:text-blue-900 mx-2">
-                      <HiOutlinePencil className="h-5 w-5" />
-                    </button>
-                    <button className="text-red-600 hover:text-red-900 mx-2">
-                      <HiOutlineTrash className="h-5 w-5" />
-                    </button>
+              {filteredForums.length > 0 ? (
+                filteredForums.map((forum) => (
+                  <tr key={forum.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">{forum.title}</div>
+                      <div className="text-sm text-gray-500">{forum.responses} responses</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                        {forum.category}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {forum.participants}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          forum.status === 'active'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-gray-100 text-gray-800'
+                        }`}
+                      >
+                        {forum.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(forum.lastActivity).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <button className="text-primary-600 hover:text-primary-900 mx-2">
+                        <HiOutlineEye className="h-5 w-5" />
+                      </button>
+                      <button className="text-blue-600 hover:text-blue-900 mx-2">
+                        <HiOutlinePencil className="h-5 w-5" />
+                      </button>
+                      <button className="text-red-600 hover:text-red-900 mx-2">
+                        <HiOutlineTrash className="h-5 w-5" />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
+                    No forums found
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
 
-        {/* Pagination */}
-        <div className="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
-          <div className="flex items-center justify-between">
-            <div className="flex-1 flex justify-between sm:hidden">
-              <button className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                Previous
-              </button>
-              <button className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                Next
-              </button>
-            </div>
-            <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-              <div>
-                <p className="text-sm text-gray-700">
-                  Showing <span className="font-medium">1</span> to{' '}
-                  <span className="font-medium">10</span> of{' '}
-                  <span className="font-medium">97</span> results
-                </p>
-              </div>
-              <div>
-                <nav
-                  className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
-                  aria-label="Pagination"
-                >
-                  <button className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                    Previous
-                  </button>
-                  <button className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-                    1
-                  </button>
-                  <button className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-primary-50 text-sm font-medium text-primary-600">
-                    2
-                  </button>
-                  <button className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-                    3
-                  </button>
-                  <button className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                    Next
-                  </button>
-                </nav>
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* Pagination would go here */}
       </div>
+      <ToastContainer />
     </div>
   );
 };
