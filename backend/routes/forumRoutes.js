@@ -1,8 +1,6 @@
-// routes/forumRoutes.js
 const express = require("express");
 const router = express.Router();
 const forumController = require("../controllers/forumController");
-const { protect } = require("../middlewares/authMiddleware");
 
 /**
  * @swagger
@@ -17,8 +15,6 @@ const { protect } = require("../middlewares/authMiddleware");
  *   post:
  *     summary: Create a new forum post
  *     tags: [Forums]
- *     security:
- *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -44,12 +40,10 @@ const { protect } = require("../middlewares/authMiddleware");
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Forum'
- *       401:
- *         description: Not authorized
  *       500:
  *         description: Server error
  */
-router.post("/", protect, forumController.createForumPost);
+router.post("/", forumController.createForumPost);
 
 /**
  * @swagger
@@ -104,8 +98,6 @@ router.get("/:id", forumController.getForumPostById);
  *   put:
  *     summary: Update a forum post
  *     tags: [Forums]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -135,16 +127,12 @@ router.get("/:id", forumController.getForumPostById);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Forum'
- *       401:
- *         description: Not authorized
- *       403:
- *         description: Forbidden (not the author)
  *       404:
  *         description: Forum post not found
  *       500:
  *         description: Server error
  */
-router.put("/:id", protect, forumController.updateForumPost);
+router.put("/:id", forumController.updateForumPost);
 
 /**
  * @swagger
@@ -152,8 +140,6 @@ router.put("/:id", protect, forumController.updateForumPost);
  *   delete:
  *     summary: Delete a forum post
  *     tags: [Forums]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -164,16 +150,12 @@ router.put("/:id", protect, forumController.updateForumPost);
  *     responses:
  *       200:
  *         description: Forum post deleted successfully
- *       401:
- *         description: Not authorized
- *       403:
- *         description: Forbidden (not the author or admin)
  *       404:
  *         description: Forum post not found
  *       500:
  *         description: Server error
  */
-router.delete("/:id", protect, forumController.deleteForumPost);
+router.delete("/:id", forumController.deleteForumPost);
 
 /**
  * @swagger
@@ -181,8 +163,6 @@ router.delete("/:id", protect, forumController.deleteForumPost);
  *   post:
  *     summary: Add a comment to a forum post
  *     tags: [Forums]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -208,14 +188,12 @@ router.delete("/:id", protect, forumController.deleteForumPost);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Forum'
- *       401:
- *         description: Not authorized
  *       404:
  *         description: Forum post not found
  *       500:
  *         description: Server error
  */
-router.post("/:id/comments", protect, forumController.addComment);
+router.post("/:id/comments", forumController.addComment);
 
 /**
  * @swagger
@@ -223,8 +201,6 @@ router.post("/:id/comments", protect, forumController.addComment);
  *   post:
  *     summary: Like a forum post
  *     tags: [Forums]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -239,13 +215,11 @@ router.post("/:id/comments", protect, forumController.addComment);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Forum'
- *       401:
- *         description: Not authorized
  *       404:
  *         description: Forum post not found
  *       500:
  *         description: Server error
  */
-router.post("/:id/like", protect, forumController.likeForumPost);
+router.post("/:id/like", forumController.likeForumPost);
 
 module.exports = router;

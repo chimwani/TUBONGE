@@ -11,7 +11,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 interface Forum {
-  id: number;
+  _id: string;
   title: string;
   category: string;
   participants: number;
@@ -32,175 +32,232 @@ const Forums = () => {
         const response = await axios.get('http://localhost:5000/api/forums');
         setForums(response.data);
         setLoading(false);
+        console.log('Forums fetched:', response.data);
       } catch (error) {
         toast.error('Failed to fetch forums');
         setLoading(false);
+        console.error('Fetch error:', error);
       }
     };
 
     fetchForums();
   }, []);
 
-  const filteredForums = forums.filter(forum => {
+  // Handle Delete
+  const handleDelete = async (forumId: string) => {
+    if (window.confirm('Are you sure you want to delete this forum?')) {
+      try {
+        await axios.delete(`http://localhost:5000/api/forums/${forumId}`);
+        setForums(forums.filter((forum) => forum._id !== forumId));
+        toast.success('Forum deleted successfully');
+      } catch (error) {
+        toast.error('Failed to delete forum');
+        console.error(error);
+      }
+    }
+  };
+
+  // Handle Create
+  const handleCreate = async () => {
+    try {
+      const newForum = {
+        title: 'New Forum',
+        category: 'General',
+        participants: 0,
+        status: 'active',
+        lastActivity: new Date().toISOString(),
+        responses: 0,
+      };
+      const response = await axios.post('http://localhost:5000/api/forums', newForum);
+      setForums([response.data, ...forums]);
+      toast.success('Forum created successfully');
+    } catch (error) {
+      toast.error('Failed to create forum');
+      console.error('Create error:', error);
+    }
+  };
+
+  const filteredForums = forums.filter((forum) => {
     const matchesTab = activeTab === 'all' || forum.status === activeTab;
-    const matchesSearch = forum.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         forum.category.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch =
+      forum.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      forum.category.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesTab && matchesSearch;
   });
 
-  if (loading) {
-    return <div className="text-center py-6">Loading forums...</div>;
-  }
+  // Debug log to confirm render
+  console.log('Rendering Forums component, loading:', loading);
 
   return (
-    <div className="space-y-6">
+    <div style={{ padding: '20px' }}>
       {/* Header */}
-      <div className="sm:flex sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-semibold text-gray-900">Forums Management</h1>
-        <div className="mt-3 sm:mt-0">
-          <button className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
-            <HiOutlinePlus className="mr-2 h-5 w-5" />
-            New Forum
-          </button>
-        </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
+        <h1 style={{ fontSize: '24px', fontWeight: '600' }}>Forums Management</h1>
       </div>
 
-      {/* Filters and Search */}
-      <div className="bg-white rounded-lg shadow-sm p-4">
-        <div className="sm:flex sm:items-center sm:justify-between">
+      {/* Filters, Search, and Create Button */}
+      <div style={{ backgroundColor: '#fff', padding: '16px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {/* Tabs */}
-          <div className="flex space-x-4">
+          <div style={{ display: 'flex', gap: '16px' }}>
             <button
               onClick={() => setActiveTab('active')}
-              className={`px-4 py-2 rounded-md text-sm font-medium ${
-                activeTab === 'active'
-                  ? 'bg-primary-50 text-primary-600'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '4px',
+                backgroundColor: activeTab === 'active' ? '#e0f2fe' : 'transparent',
+                color: activeTab === 'active' ? '#0284c7' : '#6b7280',
+              }}
             >
               Active Forums
             </button>
             <button
               onClick={() => setActiveTab('archived')}
-              className={`px-4 py-2 rounded-md text-sm font-medium ${
-                activeTab === 'archived'
-                  ? 'bg-primary-50 text-primary-600'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '4px',
+                backgroundColor: activeTab === 'archived' ? '#e0f2fe' : 'transparent',
+                color: activeTab === 'archived' ? '#0284c7' : '#6b7280',
+              }}
             >
               Archived
             </button>
             <button
               onClick={() => setActiveTab('all')}
-              className={`px-4 py-2 rounded-md text-sm font-medium ${
-                activeTab === 'all'
-                  ? 'bg-primary-50 text-primary-600'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '4px',
+                backgroundColor: activeTab === 'all' ? '#e0f2fe' : 'transparent',
+                color: activeTab === 'all' ? '#0284c7' : '#6b7280',
+              }}
             >
               All Forums
             </button>
           </div>
 
-          {/* Search */}
-          <div className="mt-3 sm:mt-0">
-            <div className="relative rounded-md shadow-sm">
+          {/* Search and Create */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: '300px' }}>
+            <div style={{ position: 'relative' }}>
               <input
                 type="text"
                 placeholder="Search forums..."
-                className="block w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px 8px 36px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '4px',
+                }}
               />
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <HiOutlineSearch className="h-5 w-5 text-gray-400" />
-              </div>
+              <HiOutlineSearch
+                style={{ position: 'absolute', top: '50%', left: '12px', transform: 'translateY(-50%)', color: '#9ca3af' }}
+              />
             </div>
+            <button
+              onClick={handleCreate}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '8px 16px',
+                borderRadius: '4px',
+                backgroundColor: '#2563eb',
+                color: '#fff',
+                border: 'none',
+                cursor: 'pointer',
+              }}
+            >
+              <HiOutlinePlus style={{ marginRight: '8px' }} />
+              New Forum
+            </button>
           </div>
         </div>
       </div>
 
       {/* Forums Table */}
-      <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Forum Title
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Category
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Participants
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Last Activity
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredForums.length > 0 ? (
-                filteredForums.map((forum) => (
-                  <tr key={forum.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{forum.title}</div>
-                      <div className="text-sm text-gray-500">{forum.responses} responses</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                        {forum.category}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {forum.participants}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          forum.status === 'active'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}
-                      >
-                        {forum.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(forum.lastActivity).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button className="text-primary-600 hover:text-primary-900 mx-2">
-                        <HiOutlineEye className="h-5 w-5" />
-                      </button>
-                      <button className="text-blue-600 hover:text-blue-900 mx-2">
-                        <HiOutlinePencil className="h-5 w-5" />
-                      </button>
-                      <button className="text-red-600 hover:text-red-900 mx-2">
-                        <HiOutlineTrash className="h-5 w-5" />
-                      </button>
+      <div style={{ backgroundColor: '#fff', borderRadius: '8px', overflow: 'hidden', marginTop: '24px' }}>
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '24px' }}>Loading forums...</div>
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead style={{ backgroundColor: '#f9fafb' }}>
+                <tr>
+                  <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', color: '#6b7280', textTransform: 'uppercase' }}>
+                    Forum Title
+                  </th>
+                  <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', color: '#6b7280', textTransform: 'uppercase' }}>
+                    Category
+                  </th>
+                  <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', color: '#6b7280', textTransform: 'uppercase' }}>
+                    Participants
+                  </th>
+                  <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', color: '#6b7280', textTransform: 'uppercase' }}>
+                    Status
+                  </th>
+                  <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', color: '#6b7280', textTransform: 'uppercase' }}>
+                    Last Activity
+                  </th>
+                  <th style={{ padding: '12px', textAlign: 'right', fontSize: '12px', color: '#6b7280', textTransform: 'uppercase' }}>
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredForums.length > 0 ? (
+                  filteredForums.map((forum) => (
+                    <tr key={forum._id} style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '16px' }}>
+                        <div style={{ fontSize: '14px', fontWeight: '500' }}>{forum.title}</div>
+                        <div style={{ fontSize: '12px', color: '#6b7280' }}>{forum.responses} responses</div>
+                      </td>
+                      <td style={{ padding: '16px' }}>
+                        <span style={{ padding: '2px 8px', fontSize: '12px', backgroundColor: '#dbeafe', color: '#1e40af', borderRadius: '9999px' }}>
+                          {forum.category}
+                        </span>
+                      </td>
+                      <td style={{ padding: '16px', fontSize: '14px', color: '#6b7280' }}>{forum.participants}</td>
+                      <td style={{ padding: '16px' }}>
+                        <span
+                          style={{
+                            padding: '2px 8px',
+                            fontSize: '12px',
+                            backgroundColor: forum.status === 'active' ? '#dcfce7' : '#f3f4f6',
+                            color: forum.status === 'active' ? '#166534' : '#4b5563',
+                            borderRadius: '9999px',
+                          }}
+                        >
+                          {forum.status}
+                        </span>
+                      </td>
+                      <td style={{ padding: '16px', fontSize: '14px', color: '#6b7280' }}>
+                        {new Date(forum.lastActivity).toLocaleDateString()}
+                      </td>
+                      <td style={{ padding: '16px', textAlign: 'right' }}>
+                        <button style={{ color: '#2563eb', margin: '0 8px' }}>
+                          <HiOutlineEye />
+                        </button>
+                        <button style={{ color: '#2563eb', margin: '0 8px' }}>
+                          <HiOutlinePencil />
+                        </button>
+                        <button onClick={() => handleDelete(forum._id)} style={{ color: '#dc2626', margin: '0 8px' }}>
+                          <HiOutlineTrash />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={6} style={{ padding: '16px', textAlign: 'center', color: '#6b7280' }}>
+                      No forums found
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
-                    No forums found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination would go here */}
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
       <ToastContainer />
     </div>

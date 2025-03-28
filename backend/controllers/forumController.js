@@ -1,18 +1,21 @@
-// controllers/forumController.js
 const Forum = require("../models/Forum");
 
 // @desc    Create a new forum post
 // @route   POST /api/forums
-// @access  Private
+// @access  Public (no authentication)
 exports.createForumPost = async (req, res) => {
   try {
     const { title, content, tags } = req.body;
 
+    if (!title || !content) {
+      return res.status(400).json({ message: "Title and content are required" });
+    }
+
     const forumPost = new Forum({
       title,
       content,
-      author: req.user.id,
-      tags,
+      tags: tags || [],
+      // No author field since authentication is removed
     });
 
     await forumPost.save();
@@ -28,7 +31,7 @@ exports.createForumPost = async (req, res) => {
 // @access  Public
 exports.getAllForumPosts = async (req, res) => {
   try {
-    const forumPosts = await Forum.find().populate("author", "name email");
+    const forumPosts = await Forum.find(); // Removed .populate("author") since no author
     res.status(200).json(forumPosts);
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
@@ -40,10 +43,7 @@ exports.getAllForumPosts = async (req, res) => {
 // @access  Public
 exports.getForumPostById = async (req, res) => {
   try {
-    const forumPost = await Forum.findById(req.params.id).populate(
-      "author",
-      "name email"
-    );
+    const forumPost = await Forum.findById(req.params.id); // Removed .populate("author")
 
     if (!forumPost) {
       return res.status(404).json({ message: "Forum post not found" });
@@ -57,7 +57,7 @@ exports.getForumPostById = async (req, res) => {
 
 // @desc    Update a forum post
 // @route   PUT /api/forums/:id
-// @access  Private (only author can update)
+// @access  Public (no author check)
 exports.updateForumPost = async (req, res) => {
   try {
     const { title, content, tags } = req.body;
@@ -68,11 +68,7 @@ exports.updateForumPost = async (req, res) => {
       return res.status(404).json({ message: "Forum post not found" });
     }
 
-    // Check if the user is the author
-    if (forumPost.author.toString() !== req.user.id) {
-      return res.status(403).json({ message: "Not authorized to update this post" });
-    }
-
+    // Removed author check since no authentication
     forumPost.title = title || forumPost.title;
     forumPost.content = content || forumPost.content;
     forumPost.tags = tags || forumPost.tags;
@@ -87,7 +83,7 @@ exports.updateForumPost = async (req, res) => {
 
 // @desc    Delete a forum post
 // @route   DELETE /api/forums/:id
-// @access  Private (only author or admin can delete)
+// @access  Public (no author or admin check)
 exports.deleteForumPost = async (req, res) => {
   try {
     const forumPost = await Forum.findById(req.params.id);
@@ -96,15 +92,8 @@ exports.deleteForumPost = async (req, res) => {
       return res.status(404).json({ message: "Forum post not found" });
     }
 
-    // Check if the user is the author or an admin
-    if (
-      forumPost.author.toString() !== req.user.id &&
-      req.user.role !== "Admin"
-    ) {
-      return res.status(403).json({ message: "Not authorized to delete this post" });
-    }
-
-    await forumPost.remove();
+    // Removed author and admin check since no authentication
+    await forumPost.deleteOne();
 
     res.status(200).json({ message: "Forum post deleted successfully" });
   } catch (error) {
@@ -114,10 +103,14 @@ exports.deleteForumPost = async (req, res) => {
 
 // @desc    Add a comment to a forum post
 // @route   POST /api/forums/:id/comments
-// @access  Private
+// @access  Public (no user association)
 exports.addComment = async (req, res) => {
   try {
     const { content } = req.body;
+
+    if (!content) {
+      return res.status(400).json({ message: "Comment content is required" });
+    }
 
     const forumPost = await Forum.findById(req.params.id);
 
@@ -126,8 +119,7 @@ exports.addComment = async (req, res) => {
     }
 
     const comment = {
-      user: req.user.id,
-      content,
+      content, // No user field since authentication is removed
     };
 
     forumPost.comments.push(comment);
@@ -141,7 +133,7 @@ exports.addComment = async (req, res) => {
 
 // @desc    Like a forum post
 // @route   POST /api/forums/:id/like
-// @access  Private
+// @access  Public (simple counter instead of user tracking)
 exports.likeForumPost = async (req, res) => {
   try {
     const forumPost = await Forum.findById(req.params.id);
@@ -150,12 +142,8 @@ exports.likeForumPost = async (req, res) => {
       return res.status(404).json({ message: "Forum post not found" });
     }
 
-    // Check if the user already liked the post
-    if (forumPost.likes.includes(req.user.id)) {
-      return res.status(400).json({ message: "You already liked this post" });
-    }
-
-    forumPost.likes.push(req.user.id);
+    // Changed from tracking user IDs to a simple counter
+    forumPost.likes = (forumPost.likes || 0) + 1;
     await forumPost.save();
 
     res.status(200).json(forumPost);
@@ -163,3 +151,5 @@ exports.likeForumPost = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+module.exports = exports;

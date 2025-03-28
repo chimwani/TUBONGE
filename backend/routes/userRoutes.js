@@ -2,7 +2,6 @@
 const express = require("express");
 const router = express.Router();
 const userController = require("../controllers/userController");
-const { protect, authorize } = require("../middlewares/authMiddleware");
 
 /**
  * @swagger
@@ -100,8 +99,6 @@ router.post("/login", userController.loginUser);
  *   get:
  *     summary: Get user profile
  *     tags: [Users]
- *     security:
- *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: User profile retrieved successfully
@@ -109,14 +106,12 @@ router.post("/login", userController.loginUser);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/User'
- *       401:
- *         description: Not authorized
  *       404:
  *         description: User not found
  *       500:
  *         description: Server error
  */
-router.get("/me", protect, userController.getUserProfile);
+router.get("/me", userController.getUserProfile);
 
 /**
  * @swagger
@@ -124,8 +119,6 @@ router.get("/me", protect, userController.getUserProfile);
  *   put:
  *     summary: Update user profile
  *     tags: [Users]
- *     security:
- *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -153,14 +146,12 @@ router.get("/me", protect, userController.getUserProfile);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/User'
- *       401:
- *         description: Not authorized
  *       404:
  *         description: User not found
  *       500:
  *         description: Server error
  */
-router.put("/me", protect, userController.updateUserProfile);
+router.put("/me", userController.updateUserProfile);
 
 /**
  * @swagger
@@ -168,28 +159,22 @@ router.put("/me", protect, userController.updateUserProfile);
  *   delete:
  *     summary: Delete user profile
  *     tags: [Users]
- *     security:
- *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: User deleted successfully
- *       401:
- *         description: Not authorized
  *       404:
  *         description: User not found
  *       500:
  *         description: Server error
  */
-router.delete("/me", protect, userController.deleteUserProfile);
+router.delete("/me", userController.deleteUserProfile);
 
 /**
  * @swagger
  * /api/users:
  *   get:
- *     summary: Get all users (Admin only)
+ *     summary: Get all users
  *     tags: [Users]
- *     security:
- *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: List of all users
@@ -199,10 +184,6 @@ router.delete("/me", protect, userController.deleteUserProfile);
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/User'
- *       401:
- *         description: Not authorized
- *       403:
- *         description: Forbidden (not an admin)
  *       500:
  *         description: Server error
  */
@@ -212,10 +193,8 @@ router.get("/", userController.getAllUsers);
  * @swagger
  * /api/users/{id}:
  *   get:
- *     summary: Get user by ID (Admin only)
+ *     summary: Get user by ID
  *     tags: [Users]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -230,25 +209,19 @@ router.get("/", userController.getAllUsers);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/User'
- *       401:
- *         description: Not authorized
- *       403:
- *         description: Forbidden (not an admin)
  *       404:
  *         description: User not found
  *       500:
  *         description: Server error
  */
-router.get("/:id", protect, authorize("Admin"), userController.getUserById);
+router.get("/:id", userController.getUserById);
 
 /**
  * @swagger
  * /api/users/{id}:
  *   put:
- *     summary: Update user by ID (Admin only)
+ *     summary: Update user by ID
  *     tags: [Users]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -281,25 +254,19 @@ router.get("/:id", protect, authorize("Admin"), userController.getUserById);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/User'
- *       401:
- *         description: Not authorized
- *       403:
- *         description: Forbidden (not an admin)
  *       404:
  *         description: User not found
  *       500:
  *         description: Server error
  */
-router.put("/:id", protect, authorize("Admin"), userController.updateUserById);
+router.put("/:id", userController.updateUserById);
 
 /**
  * @swagger
  * /api/users/{id}:
  *   delete:
- *     summary: Delete user by ID (Admin only)
+ *     summary: Delete user by ID
  *     tags: [Users]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -310,15 +277,11 @@ router.put("/:id", protect, authorize("Admin"), userController.updateUserById);
  *     responses:
  *       200:
  *         description: User deleted successfully
- *       401:
- *         description: Not authorized
- *       403:
- *         description: Forbidden (not an admin)
  *       404:
  *         description: User not found
  *       500:
  *         description: Server error
  */
-router.delete("/:id", protect, authorize("Admin"), userController.deleteUserById);
+router.delete("/:id", userController.deleteUserById);
 
 module.exports = router;
