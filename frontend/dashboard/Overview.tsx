@@ -43,12 +43,7 @@ const Overview = () => {
             change: '-8%',
             icon: HiClipboardList,
           },
-          {
-            name: 'Documents',
-            value: '438', // Placeholder
-            change: '+17%',
-            icon: HiDocumentText,
-          },
+          
         ];
 
         setStats(transformedStats);
@@ -129,11 +124,7 @@ const Overview = () => {
                             {forum.tags ? forum.tags.join(', ') : 'No tags'}
                           </p>
                         </div>
-                        <div className="ml-4 text-sm text-gray-500">
-                          {forum.timestamp
-                            ? new Date(forum.timestamp).toLocaleDateString()
-                            : 'N/A'}
-                        </div>
+                        
                       </div>
                     </li>
                   ))}
@@ -158,11 +149,7 @@ const Overview = () => {
                           <p className="text-sm font-medium text-gray-900 truncate">{issue.title}</p>
                           <p className="text-sm text-gray-500">{issue.status || 'Unknown'}</p>
                         </div>
-                        <div className="ml-4 text-sm text-gray-500">
-                          {issue.timestamp
-                            ? new Date(issue.timestamp).toLocaleDateString()
-                            : 'N/A'}
-                        </div>
+                        
                       </div>
                     </li>
                   ))}

@@ -1,29 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import {
-  HiOutlineSearch,
-  HiOutlinePlus,
-  HiOutlineTrash,
-  HiOutlinePencil,
-} from 'react-icons/hi';
+import { HiOutlineSearch, HiOutlinePlus, HiOutlineTrash } from 'react-icons/hi';
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 interface Notification {
   _id: string;
-  recipient: string;
   message: string;
-  type: string;
-  relatedIncident?: string;
-  status: 'read' | 'unread';
   createdAt: string;
 }
 
 const PublicNotices = () => {
-  const [activeTab, setActiveTab] = useState('unread');
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [message, setMessage] = useState('');
 
   // Fetch notifications on mount
   useEffect(() => {
@@ -42,20 +34,21 @@ const PublicNotices = () => {
     }
   };
 
-  // Handle creating a new notification with default values
+  // Handle creating a new notification
   const handleCreateNotification = async () => {
-    const newNotification = {
-      recipient: 'All Users', // Default value
-      message: 'A new public notice has been issued.',
-      type: 'New Incident',
-      relatedIncident: '', // Optional, left empty
-      status: 'unread',
-    };
+    if (!message.trim()) {
+      toast.error('Message cannot be empty');
+      return;
+    }
+
+    const newNotification = { message };
 
     try {
       const response = await axios.post('http://localhost:5000/api/notifications', newNotification);
       setNotifications([response.data, ...notifications]);
       toast.success('Notification created successfully!');
+      setMessage(''); // Clear the input
+      setIsModalOpen(false); // Close the modal
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to create notification');
       console.error('Create error:', error.response || error);
@@ -76,15 +69,10 @@ const PublicNotices = () => {
     }
   };
 
-  // Filter notifications based on tab and search term
-  const filteredNotifications = notifications.filter((notification) => {
-    const matchesTab = activeTab === 'all' || notification.status === activeTab;
-    const matchesSearch =
-      notification.recipient.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      notification.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      notification.type.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesTab && matchesSearch;
-  });
+  // Filter notifications based on search term
+  const filteredNotifications = notifications.filter((notification) =>
+    notification.message.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="space-y-6 p-4">
@@ -94,48 +82,31 @@ const PublicNotices = () => {
         <p className="text-sm text-gray-500">Manage and track all notifications</p>
       </div>
 
-      {/* Filters, Search, and Create Button */}
+      {/* Search and Create Button */}
       <div className="bg-white rounded-lg shadow-sm p-4">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-          {/* Tabs */}
-          <div className="flex space-x-4">
-            {['unread', 'read', 'all'].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 rounded-md text-sm font-medium ${
-                  activeTab === tab
-                    ? 'bg-blue-100 text-blue-600'
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                {tab === 'all' ? 'All Notifications' : tab.charAt(0).toUpperCase() + tab.slice(1)}
-              </button>
-            ))}
+          {/* Search */}
+          <div className="relative rounded-md shadow-sm w-full sm:w-64">
+            <input
+              type="text"
+              placeholder="Search notifications..."
+              className="block w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <HiOutlineSearch className="h-5 w-5 text-gray-400" />
+            </div>
           </div>
 
-          {/* Search and Create */}
-          <div className="flex flex-col gap-3 w-full sm:w-64">
-            <div className="relative rounded-md shadow-sm">
-              <input
-                type="text"
-                placeholder="Search notifications..."
-                className="block w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <HiOutlineSearch className="h-5 w-5 text-gray-400" />
-              </div>
-            </div>
-            <button
-              onClick={handleCreateNotification}
-              className="flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
-            >
-              <HiOutlinePlus className="mr-2 h-5 w-5" />
-              Create Notification
-            </button>
-          </div>
+          {/* Create Button */}
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+          >
+            <HiOutlinePlus className="mr-2 h-5 w-5" />
+            Create Notification
+          </button>
         </div>
       </div>
 
@@ -148,58 +119,30 @@ const PublicNotices = () => {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  {['Recipient', 'Message', 'Type', 'Related Incident', 'Status', 'Created At', 'Actions'].map((header) => (
-                    <th
-                      key={header}
-                      className={`px-6 py-3 text-${
-                        header === 'Actions' ? 'right' : 'left'
-                      } text-xs font-medium text-gray-500 uppercase tracking-wider`}
-                    >
-                      {header}
-                    </th>
-                  ))}
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Message
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Created At
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredNotifications.length > 0 ? (
                   filteredNotifications.map((notification) => (
                     <tr key={notification._id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
-                        {notification.recipient}
-                      </td>
                       <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900">{notification.message}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                          {notification.type}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {notification.relatedIncident || 'N/A'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            notification.status === 'unread'
-                              ? 'bg-yellow-100 text-yellow-800'
-                              : 'bg-green-100 text-green-800'
-                          }`}
-                        >
-                          {notification.status}
-                        </span>
+                        <div className="text-sm text-gray-900 break-words max-w-2xl">
+                          {notification.message}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {new Date(notification.createdAt).toLocaleString()}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                        <button
-                          onClick={() => toast.info('Edit functionality not implemented yet')}
-                          className="text-blue-600 hover:text-blue-900"
-                          title="Edit"
-                        >
-                          <HiOutlinePencil className="h-5 w-5" />
-                        </button>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button
                           onClick={() => handleDeleteNotification(notification._id)}
                           className="text-red-600 hover:text-red-900"
@@ -212,7 +155,7 @@ const PublicNotices = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan={3} className="px-6 py-8 text-center text-gray-500">
                       No notifications found
                     </td>
                   </tr>
@@ -222,6 +165,46 @@ const PublicNotices = () => {
           </div>
         )}
       </div>
+
+      {/* Modal for Creating Notification */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">Create New Notification</h2>
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="message" className="block text-sm font-medium text-gray-700">
+                  Message
+                </label>
+                <textarea
+                  id="message"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 resize-y h-32"
+                  placeholder="Enter your notification message here..."
+                />
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setMessage('');
+                  setIsModalOpen(false);
+                }}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCreateNotification}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
+                Create
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <ToastContainer
         position="bottom-right"

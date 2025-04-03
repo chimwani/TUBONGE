@@ -24,8 +24,8 @@ const Budget = () => {
     { category: 'Social Services', allocated: 800000, spent: 600000 },
   ];
 
-  const years = ['2024', '2023', '2022'];
-  const quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
+  const years = ['2024'];
+  const quarters = ['Q1'];
 
   return (
     <div className="space-y-6">

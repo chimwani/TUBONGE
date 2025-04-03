@@ -1,8 +1,8 @@
-import React, { useContext } from 'react'; // Changed useState to useContext
+import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { Disclosure } from '@headlessui/react';
-import { HiMenu, HiX } from 'react-icons/hi';
-import { AuthContext } from '../AuthContext'; // Import AuthContext
+import { HiMenu, HiX, HiUser } from 'react-icons/hi'; // Added HiUser for profile icon
+import { AuthContext } from '../AuthContext';
 
 const navigation = [
   { name: 'Home', href: '/' },
@@ -13,128 +13,96 @@ const navigation = [
 ];
 
 const Header: React.FC = () => {
-  const { isAuthenticated, logout } = useContext(AuthContext); // Use AuthContext instead of local state
-
-  const handleLogout = () => {
-    logout(); // Call the logout function from AuthContext
-  };
+  const { isAuthenticated } = useContext(AuthContext);
 
   return (
     <Disclosure as="nav" className="bg-gray-900 text-white shadow-md sticky top-0 z-50">
       {({ open }) => (
         <>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between h-20">
-              <div className="flex">
-                <div className="flex-shrink-0 flex items-center">
-                  <Link
-                    to="/"
-                    className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-primary-500 bg-clip-text text-transparent hover:opacity-80 transition-opacity"
-                  >
-                    CivicEngage
-                  </Link>
-                </div>
-                <div className="hidden sm:ml-8 sm:flex sm:space-x-1">
-                  {navigation.map((item) => (
-                    <Link
-                      key={item.name}
-                      to={item.href}
-                      className="text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 my-auto hover:bg-white/10"
-                    >
-                      {item.name}
-                    </Link>
-                  ))}
-                </div>
+            <div className="flex justify-between items-center h-20">
+              {/* Logo */}
+              <div className="flex-shrink-0 flex items-center">
+                <Link
+                  to="/"
+                  className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-primary-500 bg-clip-text text-transparent hover:opacity-80 transition-opacity duration-200"
+                >
+                  CivicEngage
+                </Link>
               </div>
 
-              <div className="hidden sm:ml-6 sm:flex sm:items-center">
+              {/* Desktop Navigation */}
+              <div className="hidden sm:flex sm:items-center sm:space-x-1 sm:ml-8">
+                {navigation.map((item) => (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    className="px-4 py-2 text-sm font-medium rounded-lg hover:bg-white/10 transition-colors duration-200"
+                  >
+                    {item.name}
+                  </Link>
+                ))}
+              </div>
+
+              {/* Desktop Auth/Profile Links */}
+              <div className="hidden sm:flex sm:items-center sm:ml-6 space-x-3">
                 {isAuthenticated ? (
-                  <div className="space-x-3">
-                    <Link
-                      to="/dashboard"
-                      className="bg-gradient-to-r from-primary-600 to-primary-500 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:shadow-lg hover:shadow-primary-500/20 transition-all duration-200 hover:-translate-y-0.5"
-                    >
-                      Dashboard
-                    </Link>
-                    <button
-                      onClick={handleLogout}
-                      className="text-white hover:text-primary-100 px-4 py-2.5 rounded-lg text-sm font-medium border-2 border-transparent hover:border-primary-100 transition-all duration-200"
-                    >
-                      Logout
-                    </button>
-                  </div>
+                  <Link
+                    to="/profile"
+                    className="p-2 rounded-full hover:bg-white/10 transition-colors duration-200"
+                    title="User Profile"
+                  >
+                    <HiUser className="h-6 w-6" />
+                  </Link>
                 ) : (
-                  <div className="space-x-3">
+                  <>
                     <Link
                       to="/login"
-                      className="text-white hover:text-primary-100 px-4 py-2.5 rounded-lg text-sm font-medium border-2 border-transparent hover:border-primary-100 transition-all duration-200"
+                      className="px-4 py-2 text-sm font-medium rounded-lg border-2 border-transparent hover:border-primary-100 hover:text-primary-100 transition-all duration-200"
                     >
                       Login
                     </Link>
                     <Link
                       to="/register"
-                      className="bg-gradient-to-r from-primary-600 to-primary-500 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:shadow-lg hover:shadow-primary-500/20 transition-all duration-200 hover:-translate-y-0.5"
+                      className="px-6 py-2 text-sm font-medium bg-gradient-to-r from-primary-600 to-primary-500 rounded-lg hover:shadow-lg hover:shadow-primary-500/20 transition-all duration-200 hover:-translate-y-0.5"
                     >
                       Register
                     </Link>
-                  </div>
+                  </>
                 )}
               </div>
 
-              <div className="-mr-2 flex items-center sm:hidden">
-                <Disclosure.Button className="inline-flex items-center justify-center p-2 rounded-lg text-white hover:text-primary-100 hover:bg-white/10 transition-colors duration-200">
-                  {open ? (
-                    <HiX className="block h-6 w-6" aria-hidden="true" />
-                  ) : (
-                    <HiMenu className="block h-6 w-6" aria-hidden="true" />
-                  )}
+              {/* Mobile Menu Button */}
+              <div className="sm:hidden flex items-center">
+                <Disclosure.Button className="p-2 rounded-lg hover:bg-white/10 hover:text-primary-100 transition-colors duration-200">
+                  {open ? <HiX className="h-6 w-6" /> : <HiMenu className="h-6 w-6" />}
                 </Disclosure.Button>
               </div>
             </div>
           </div>
 
-          <Disclosure.Panel className="sm:hidden">
-            <div className="px-3 pt-2 pb-3 space-y-1 bg-gray-900/95 backdrop-blur-sm">
+          {/* Mobile Navigation Panel */}
+          <Disclosure.Panel className="sm:hidden bg-gray-900/95 backdrop-blur-sm">
+            <div className="px-3 pt-2 pb-4 space-y-2">
               {navigation.map((item) => (
                 <Link
                   key={item.name}
                   to={item.href}
-                  className="block px-4 py-2.5 rounded-lg text-base font-medium text-white hover:bg-white/10 transition-all duration-200"
+                  className="block px-4 py-2.5 text-base font-medium rounded-lg hover:bg-white/10 transition-colors duration-200"
                 >
                   {item.name}
                 </Link>
               ))}
-              {isAuthenticated ? (
-                <div className="mt-4 space-y-2 px-4 pb-3">
-                  <Link
-                    to="/dashboard"
-                    className="block w-full text-center bg-gradient-to-r from-primary-600 to-primary-500 text-white py-2.5 rounded-lg text-base font-medium hover:shadow-lg hover:shadow-primary-500/20 transition-all duration-200"
-                  >
-                    Dashboard
-                  </Link>
-                  <button
-                    onClick={handleLogout}
-                    className="block w-full text-center text-white py-2.5 rounded-lg text-base font-medium border-2 border-transparent hover:border-primary-100 transition-all duration-200"
-                  >
-                    Logout
-                  </button>
-                </div>
-              ) : (
-                <div className="mt-4 space-y-2 px-4 pb-3">
-                  <Link
-                    to="/login"
-                    className="block w-full text-center text-white py-2.5 rounded-lg text-base font-medium border-2 border-transparent hover:border-primary-100 transition-all duration-200"
-                  >
-                    Login
-                  </Link>
-                  <Link
-                    to="/register"
-                    className="block w-full text-center bg-gradient-to-r from-primary-600 to-primary-500 text-white py-2.5 rounded-lg text-base font-medium hover:shadow-lg hover:shadow-primary-500/20 transition-all duration-200"
-                  >
-                    Register
-                  </Link>
-                </div>
-              )}
+              
+                <Link
+                  to="/profile"
+                  className="block px-4 py-2.5 text-base font-medium rounded-lg hover:bg-white/10 transition-colors duration-200 flex items-center"
+                >
+                  <HiUser className="h-5 w-5 mr-2" />
+                  Profile
+                </Link>
+              
+                
             </div>
           </Disclosure.Panel>
         </>

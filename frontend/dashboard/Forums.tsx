@@ -43,7 +43,6 @@ const Forums = () => {
     fetchForums();
   }, []);
 
-  // Handle Delete
   const handleDelete = async (forumId: string) => {
     if (window.confirm('Are you sure you want to delete this forum?')) {
       try {
@@ -57,7 +56,6 @@ const Forums = () => {
     }
   };
 
-  // Handle Create
   const handleCreate = async () => {
     try {
       const newForum = {
@@ -85,163 +83,97 @@ const Forums = () => {
     return matchesTab && matchesSearch;
   });
 
-  // Debug log to confirm render
   console.log('Rendering Forums component, loading:', loading);
 
   return (
-    <div style={{ padding: '20px' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-        <h1 style={{ fontSize: '24px', fontWeight: '600' }}>Forums Management</h1>
+    <div className="p-5">
+      <div className="flex justify-between mb-5">
+        <h1 className="text-2xl font-semibold">Forums Management</h1>
       </div>
 
-      {/* Filters, Search, and Create Button */}
-      <div style={{ backgroundColor: '#fff', padding: '16px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div className="bg-white p-4 rounded-lg shadow-sm">
+        <div className="flex items-center gap-4 flex-wrap">
           {/* Tabs */}
-          <div style={{ display: 'flex', gap: '16px' }}>
-            <button
-              onClick={() => setActiveTab('active')}
-              style={{
-                padding: '8px 16px',
-                borderRadius: '4px',
-                backgroundColor: activeTab === 'active' ? '#e0f2fe' : 'transparent',
-                color: activeTab === 'active' ? '#0284c7' : '#6b7280',
-              }}
-            >
-              Active Forums
-            </button>
-            <button
-              onClick={() => setActiveTab('archived')}
-              style={{
-                padding: '8px 16px',
-                borderRadius: '4px',
-                backgroundColor: activeTab === 'archived' ? '#e0f2fe' : 'transparent',
-                color: activeTab === 'archived' ? '#0284c7' : '#6b7280',
-              }}
-            >
-              Archived
-            </button>
+          <div className="flex gap-4">
             <button
               onClick={() => setActiveTab('all')}
-              style={{
-                padding: '8px 16px',
-                borderRadius: '4px',
-                backgroundColor: activeTab === 'all' ? '#e0f2fe' : 'transparent',
-                color: activeTab === 'all' ? '#0284c7' : '#6b7280',
-              }}
+              className={`px-4 py-2 rounded ${
+                activeTab === 'all' ? 'bg-sky-100 text-sky-700' : 'text-gray-600 hover:bg-gray-100'
+              }`}
             >
               All Forums
             </button>
           </div>
 
-          {/* Search and Create */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: '300px' }}>
-            <div style={{ position: 'relative' }}>
-              <input
-                type="text"
-                placeholder="Search forums..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '8px 12px 8px 36px',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '4px',
-                }}
-              />
-              <HiOutlineSearch
-                style={{ position: 'absolute', top: '50%', left: '12px', transform: 'translateY(-50%)', color: '#9ca3af' }}
-              />
-            </div>
-            <button
-              onClick={handleCreate}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '8px 16px',
-                borderRadius: '4px',
-                backgroundColor: '#2563eb',
-                color: '#fff',
-                border: 'none',
-                cursor: 'pointer',
-              }}
-            >
-              <HiOutlinePlus style={{ marginRight: '8px' }} />
-              New Forum
-            </button>
+          {/* Search */}
+          <div className="relative flex-1 min-w-[200px] max-w-[300px]">
+            <input
+              type="text"
+              placeholder="Search forums..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-sky-500"
+            />
+            <HiOutlineSearch className="absolute top-1/2 left-3 transform -translate-y-1/2 text-gray-400" />
           </div>
+
+          {/* Create Button */}
+          <button
+            onClick={handleCreate}
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            <HiOutlinePlus className="mr-2" />
+            New Forum
+          </button>
         </div>
       </div>
 
-      {/* Forums Table */}
-      <div style={{ backgroundColor: '#fff', borderRadius: '8px', overflow: 'hidden', marginTop: '24px' }}>
+      <div className="bg-white rounded-lg overflow-hidden mt-6">
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '24px' }}>Loading forums...</div>
+          <div className="text-center p-6 text-gray-600">Loading forums...</div>
         ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead style={{ backgroundColor: '#f9fafb' }}>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead className="bg-gray-50">
                 <tr>
-                  <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', color: '#6b7280', textTransform: 'uppercase' }}>
-                    Forum Title
-                  </th>
-                  <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', color: '#6b7280', textTransform: 'uppercase' }}>
-                    Category
-                  </th>
-                  <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', color: '#6b7280', textTransform: 'uppercase' }}>
-                    Participants
-                  </th>
-                  <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', color: '#6b7280', textTransform: 'uppercase' }}>
-                    Status
-                  </th>
-                  <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', color: '#6b7280', textTransform: 'uppercase' }}>
-                    Last Activity
-                  </th>
-                  <th style={{ padding: '12px', textAlign: 'right', fontSize: '12px', color: '#6b7280', textTransform: 'uppercase' }}>
-                    Actions
-                  </th>
+                  <th className="p-3 text-left text-xs font-medium text-gray-600 uppercase">Forum Title</th>
+                  <th className="p-3 text-left text-xs font-medium text-gray-600 uppercase">Category</th>
+                  <th className="p-3 text-left text-xs font-medium text-gray-600 uppercase">Participants</th>
+                  <th className="p-3 text-left text-xs font-medium text-gray-600 uppercase">Status</th>
+                  <th className="p-3 text-left text-xs font-medium text-gray-600 uppercase">Last Activity</th>
+                  <th className="p-3 text-right text-xs font-medium text-gray-600 uppercase">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredForums.length > 0 ? (
-                  filteredForums.map((forum) => (
-                    <tr key={forum._id} style={{ borderBottom: '1px solid #e5e7eb' }}>
-                      <td style={{ padding: '16px' }}>
-                        <div style={{ fontSize: '14px', fontWeight: '500' }}>{forum.title}</div>
-                        <div style={{ fontSize: '12px', color: '#6b7280' }}>{forum.responses} responses</div>
+                {forums.length > 0 ? (
+                  forums.map((forum) => (
+                    <tr key={forum._id} className="border-b">
+                      <td className="p-4">
+                        <div className="text-sm font-medium">{forum.title}</div>
+                        <div className="text-xs text-gray-600">{forum.responses} responses</div>
                       </td>
-                      <td style={{ padding: '16px' }}>
-                        <span style={{ padding: '2px 8px', fontSize: '12px', backgroundColor: '#dbeafe', color: '#1e40af', borderRadius: '9999px' }}>
+                      <td className="p-4">
+                        <span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
                           {forum.category}
                         </span>
                       </td>
-                      <td style={{ padding: '16px', fontSize: '14px', color: '#6b7280' }}>{forum.participants}</td>
-                      <td style={{ padding: '16px' }}>
+                      <td className="p-4 text-sm text-gray-600">{forum.participants}</td>
+                      <td className="p-4">
                         <span
-                          style={{
-                            padding: '2px 8px',
-                            fontSize: '12px',
-                            backgroundColor: forum.status === 'active' ? '#dcfce7' : '#f3f4f6',
-                            color: forum.status === 'active' ? '#166534' : '#4b5563',
-                            borderRadius: '9999px',
-                          }}
+                          className={`px-2 py-1 text-xs rounded-full ${
+                            forum.status === 'active'
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-gray-100 text-gray-600'
+                          }`}
                         >
                           {forum.status}
                         </span>
                       </td>
-                      <td style={{ padding: '16px', fontSize: '14px', color: '#6b7280' }}>
+                      <td className="p-4 text-sm text-gray-600">
                         {new Date(forum.lastActivity).toLocaleDateString()}
                       </td>
-                      <td style={{ padding: '16px', textAlign: 'right' }}>
-                        <button style={{ color: '#2563eb', margin: '0 8px' }}>
-                          <HiOutlineEye />
-                        </button>
-                        <button style={{ color: '#2563eb', margin: '0 8px' }}>
-                          <HiOutlinePencil />
-                        </button>
-                        <button onClick={() => handleDelete(forum._id)} style={{ color: '#dc2626', margin: '0 8px' }}>
+                      <td className="p-4 text-right">
+                        <button onClick={() => handleDelete(forum._id)} className="text-red-600 hover:text-red-800">
                           <HiOutlineTrash />
                         </button>
                       </td>
@@ -249,7 +181,7 @@ const Forums = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={6} style={{ padding: '16px', textAlign: 'center', color: '#6b7280' }}>
+                    <td colSpan={6} className="p-4 text-center text-gray-600">
                       No forums found
                     </td>
                   </tr>

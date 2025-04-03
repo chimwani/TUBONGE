@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const issueController = require("../controllers/issueController");
-const { protect } = require("../middlewares/authMiddleware");
 
 /**
  * @swagger
@@ -16,8 +15,6 @@ const { protect } = require("../middlewares/authMiddleware");
  *   post:
  *     summary: Create a new issue
  *     tags: [Issues]
- *     security:
- *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -47,12 +44,10 @@ const { protect } = require("../middlewares/authMiddleware");
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Issue'
- *       401:
- *         description: Not authorized
  *       500:
  *         description: Server error
  */
-router.post("/", protect, issueController.createIssue);
+router.post("/", issueController.createIssue);
 
 /**
  * @swagger
@@ -107,8 +102,6 @@ router.get("/:id", issueController.getIssueById);
  *   put:
  *     summary: Update an issue
  *     tags: [Issues]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -144,16 +137,12 @@ router.get("/:id", issueController.getIssueById);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Issue'
- *       401:
- *         description: Not authorized
- *       403:
- *         description: Forbidden (not the author or admin)
  *       404:
  *         description: Issue not found
  *       500:
  *         description: Server error
  */
-router.put("/:id", protect, issueController.updateIssue);
+router.put("/:id", issueController.updateIssue);
 
 /**
  * @swagger
@@ -161,8 +150,6 @@ router.put("/:id", protect, issueController.updateIssue);
  *   delete:
  *     summary: Delete an issue
  *     tags: [Issues]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -173,16 +160,12 @@ router.put("/:id", protect, issueController.updateIssue);
  *     responses:
  *       200:
  *         description: Issue deleted successfully
- *       401:
- *         description: Not authorized
- *       403:
- *         description: Forbidden (not the author or admin)
  *       404:
  *         description: Issue not found
  *       500:
  *         description: Server error
  */
-router.delete("/:id", protect, issueController.deleteIssue);
+router.delete("/:id", issueController.deleteIssue);
 
 /**
  * @swagger
@@ -190,8 +173,6 @@ router.delete("/:id", protect, issueController.deleteIssue);
  *   post:
  *     summary: Add a comment to an issue
  *     tags: [Issues]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -217,14 +198,12 @@ router.delete("/:id", protect, issueController.deleteIssue);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Issue'
- *       401:
- *         description: Not authorized
  *       404:
  *         description: Issue not found
  *       500:
  *         description: Server error
  */
-router.post("/:id/comments", protect, issueController.addComment);
+router.post("/:id/comments", issueController.addComment);
 
 /**
  * @swagger
@@ -232,8 +211,6 @@ router.post("/:id/comments", protect, issueController.addComment);
  *   post:
  *     summary: Upvote an issue
  *     tags: [Issues]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -250,14 +227,12 @@ router.post("/:id/comments", protect, issueController.addComment);
  *               $ref: '#/components/schemas/Issue'
  *       400:
  *         description: You have already upvoted this issue
- *       401:
- *         description: Not authorized
  *       404:
  *         description: Issue not found
  *       500:
  *         description: Server error
  */
-router.post("/:id/upvote", protect, issueController.upvoteIssue);
+router.post("/:id/upvote", issueController.upvoteIssue);
 
 /**
  * @swagger
@@ -265,8 +240,6 @@ router.post("/:id/upvote", protect, issueController.upvoteIssue);
  *   post:
  *     summary: Downvote an issue
  *     tags: [Issues]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -283,13 +256,11 @@ router.post("/:id/upvote", protect, issueController.upvoteIssue);
  *               $ref: '#/components/schemas/Issue'
  *       400:
  *         description: You have already downvoted this issue
- *       401:
- *         description: Not authorized
  *       404:
  *         description: Issue not found
  *       500:
  *         description: Server error
  */
-router.post("/:id/downvote", protect, issueController.downvoteIssue);
+router.post("/:id/downvote", issueController.downvoteIssue);
 
 module.exports = router;

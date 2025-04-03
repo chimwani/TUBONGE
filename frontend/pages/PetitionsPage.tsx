@@ -2,40 +2,35 @@ import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
-import { AuthContext } from '../components/AuthContext'; // Import AuthContext
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
-import { ToastContainer, toast } from 'react-toastify'; // Import react-toastify
-import 'react-toastify/dist/ReactToastify.css'; // Import toast styles
+import { AuthContext } from '../components/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 interface Petition {
   id: number;
   title: string;
   description: string;
-  goal: number; // Updated from signatures to goal
-  tags: string[]; // Added tags
-  creator?: string; // Optional, assuming backend might return it
-  signatures?: number; // Optional, assuming backend tracks this separately
-  timestamp: string; // Assuming backend returns this
+  goal: number;
+  tags: string[];
+  creator?: string;
+  signatures?: number;
+  timestamp: string;
 }
 
 export default function PetitionsPage() {
   const [petitions, setPetitions] = useState<Petition[]>([]);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [goal, setGoal] = useState<number>(0); // Changed from creator to goal
-  const [tags, setTags] = useState(''); // Added tags
+  const [goal, setGoal] = useState<number>(0);
+  const [tags, setTags] = useState('');
   const [loading, setLoading] = useState(true);
-  const { token, isAuthenticated } = useContext(AuthContext); // Get token and auth status
+  const { token, isAuthenticated } = useContext(AuthContext);
   const navigate = useNavigate();
 
   // Fetch petitions from the API
   useEffect(() => {
     const fetchPetitions = async () => {
-      if (!isAuthenticated) {
-        navigate('/login');
-        return;
-      }
-
       try {
         const response = await axios.get('http://localhost:5000/api/petitions', {
           headers: {
@@ -46,8 +41,7 @@ export default function PetitionsPage() {
         setLoading(false);
       } catch (err) {
         if (axios.isAxiosError(err) && err.response?.status === 401) {
-          toast.error('Unauthorized. Please log in again.');
-          navigate('/login');
+          toast.error('Please log in to view petitions');
         } else {
           toast.error('Failed to fetch petitions. Please try again later.');
         }
@@ -55,11 +49,21 @@ export default function PetitionsPage() {
       }
     };
 
-    fetchPetitions();
-  }, [token, isAuthenticated, navigate]);
+    if (isAuthenticated) {
+      fetchPetitions();
+    } else {
+      setLoading(false);
+      toast.info('Please log in to view and create petitions');
+    }
+  }, [token, isAuthenticated]);
 
   // Add a new petition
   const addPetition = async () => {
+    if (!isAuthenticated) {
+      toast.error('Please log in to create a petition');
+      return;
+    }
+
     if (!title.trim() || !description.trim() || goal <= 0) {
       toast.error('Please fill in all fields and set a valid goal!');
       return;
@@ -69,7 +73,7 @@ export default function PetitionsPage() {
       title,
       description,
       goal,
-      tags: tags.split(',').map((tag) => tag.trim()).filter((tag) => tag), // Convert to array, remove empty tags
+      tags: tags.split(',').map((tag) => tag.trim()).filter((tag) => tag),
     };
 
     try {
@@ -78,24 +82,24 @@ export default function PetitionsPage() {
           Authorization: `Bearer ${token}`,
         },
       });
-      setPetitions([response.data, ...petitions]); // Assuming backend returns the created petition
+      setPetitions([response.data, ...petitions]);
       setTitle('');
       setDescription('');
       setGoal(0);
       setTags('');
       toast.success('Petition created successfully!');
     } catch (err) {
-      if (axios.isAxiosError(err) && err.response?.status === 401) {
-        toast.error('Unauthorized. Please log in again.');
-        navigate('/login');
-      } else {
-        toast.error('Failed to create petition. Please try again.');
-      }
+      toast.error('Failed to create petition. Please try again.');
     }
   };
 
-  // Sign a petition (assuming a separate endpoint like PUT /api/petitions/:id/sign)
+  // Sign a petition
   const signPetition = async (id: number) => {
+    if (!isAuthenticated) {
+      toast.error('Please log in to sign a petition');
+      return;
+    }
+
     try {
       const response = await axios.put(
         `http://localhost:5000/api/petitions/${id}/sign`,
@@ -113,12 +117,7 @@ export default function PetitionsPage() {
       );
       toast.success('Petition signed successfully!');
     } catch (err) {
-      if (axios.isAxiosError(err) && err.response?.status === 401) {
-        toast.error('Unauthorized. Please log in again.');
-        navigate('/login');
-      } else {
-        toast.error('Failed to sign petition. Please try again.');
-      }
+      toast.error('Failed to sign petition. Please try again.');
     }
   };
 
@@ -140,47 +139,49 @@ export default function PetitionsPage() {
           {/* Welcome Message */}
           {petitions.length === 0 && (
             <div className="p-6 bg-yellow-50 border-b border-yellow-100">
-              <p className="text-yellow-800 font-medium">No petitions yet! Create one to kick things off.</p>
+              <p className="text-yellow-800 font-medium">No petitions yet! {isAuthenticated ? 'Create one to kick things off.' : 'Log in to create one.'}</p>
             </div>
           )}
 
-          {/* Petition Form */}
-          <div className="p-6 bg-gray-50 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Create a New Petition</h2>
-            <input
-              type="text"
-              placeholder="Petition Title"
-              className="w-full p-3 mb-4 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
-            <textarea
-              placeholder="Petition Description"
-              className="w-full p-3 h-32 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            ></textarea>
-            <input
-              type="number"
-              placeholder="Signature Goal"
-              className="w-full p-3 mb-4 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
-              value={goal}
-              onChange={(e) => setGoal(parseInt(e.target.value) || 0)}
-            />
-            <input
-              type="text"
-              placeholder="Tags (comma-separated)"
-              className="w-full p-3 mb-4 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
-              value={tags}
-              onChange={(e) => setTags(e.target.value)}
-            />
-            <button
-              onClick={addPetition}
-              className="mt-4 bg-gray-900 text-white py-2 px-6 rounded-lg hover:bg-blue-700 transition duration-200 font-medium"
-            >
-              Create Petition
-            </button>
-          </div>
+          {/* Petition Form - Only show if authenticated */}
+          {isAuthenticated && (
+            <div className="p-6 bg-gray-50 border-b border-gray-200">
+              <h2 className="text-xl font-semibold text-gray-800 mb-4">Create a New Petition</h2>
+              <input
+                type="text"
+                placeholder="Petition Title"
+                className="w-full p-3 mb-4 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+              <textarea
+                placeholder="Petition Description"
+                className="w-full p-3 h-32 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              ></textarea>
+              <input
+                type="number"
+                placeholder="Signature Goal"
+                className="w-full p-3 mb-4 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
+                value={goal}
+                onChange={(e) => setGoal(parseInt(e.target.value) || 0)}
+              />
+              <input
+                type="text"
+                placeholder="Tags (comma-separated)"
+                className="w-full p-3 mb-4 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
+              />
+              <button
+                onClick={addPetition}
+                className="mt-4 bg-gray-900 text-white py-2 px-6 rounded-lg hover:bg-blue-700 transition duration-200 font-medium"
+              >
+                Create Petition
+              </button>
+            </div>
+          )}
 
           {/* Petitions List */}
           <div className="p-6 space-y-4">
@@ -226,12 +227,13 @@ export default function PetitionsPage() {
                       </p>
                     </div>
                   </div>
-                  <button
+                  {/* <button
                     onClick={() => signPetition(petition.id)}
                     className="ml-4 bg-gray-900 text-white py-1.5 px-4 rounded-lg hover:bg-blue-700 transition duration-200 font-medium"
+                    disabled={!isAuthenticated}
                   >
                     Sign
-                  </button>
+                  </button> */}
                 </div>
               </div>
             ))}

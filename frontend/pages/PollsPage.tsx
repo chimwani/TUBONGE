@@ -2,68 +2,69 @@ import React, { useState, useEffect } from "react";
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 
-// Type definitions for Poll and Option
+// Type definitions for Poll and Option (aligned with backend)
 interface PollOption {
-  id: number;
   text: string;
   votes: number;
 }
 
 interface Poll {
-  id: number;
-  question: string;
+  _id: string;
+  title: string;
+  type: 'forum' | 'petition' | 'issue';
   options: PollOption[];
+  createdAt?: string;
 }
-
-// Mock data - in a real app, this would come from an API
-// Mock data - in a real app, this would come from an API
-const mockPolls: Poll[] = [
-    {
-      id: 1,
-      question: "Which forum platform do you prefer?",
-      options: [
-        { id: 1, text: "Discourse", votes: 25 },
-        { id: 2, text: "phpBB", votes: 18 },
-        { id: 3, text: "vBulletin", votes: 12 },
-      ]
-    },
-    {
-      id: 2,
-      question: "What's your favorite feature in a forum?",
-      options: [
-        { id: 1, text: "User Reputation System", votes: 30 },
-        { id: 2, text: "Customizable Themes", votes: 15 },
-        { id: 3, text: "Integration with Social Media", votes: 10 },
-      ]
-    }
-  ];
 
 const PollsPage: React.FC = () => {
   const [polls, setPolls] = useState<Poll[]>([]);
-  const [votedPolls, setVotedPolls] = useState<Set<number>>(new Set());
+  const [votedPolls, setVotedPolls] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Load polls on component mount
+  // Fetch polls from the API on component mount
   useEffect(() => {
-    // In a real app, this would be an API call
-    setPolls(mockPolls);
+    const fetchPolls = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('http://localhost:5000/api/polls');
+        if (!response.ok) {
+          throw new Error(`Failed to fetch polls: ${response.statusText}`);
+        }
+        const data: Poll[] = await response.json();
+        // Ensure votes are initialized if backend doesn't provide them
+        const initializedPolls = data.map(poll => ({
+          ...poll,
+          options: poll.options.map(opt => ({
+            text: typeof opt === 'string' ? opt : opt.text,
+            votes: typeof opt === 'string' ? 0 : (opt.votes || 0)
+          }))
+        }));
+        setPolls(initializedPolls);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPolls();
   }, []);
 
-  const handleVote = (pollId: number, optionId: number) => {
+  const handleVote = (pollId: string, optionText: string) => {
     if (votedPolls.has(pollId)) {
       alert("You have already voted on this poll!");
       return;
     }
 
-    // Update votes
+    // Update votes locally
     setPolls(prevPolls =>
       prevPolls.map(poll => {
-        if (poll.id === pollId) {
+        if (poll._id === pollId) {
           return {
             ...poll,
-            options: poll.options.map(option =>
-              option.id === optionId
-                ? { ...option, votes: option.votes + 1 }
-                : option
+            options: poll.options.map(opt =>
+              opt.text === optionText ? { ...opt, votes: opt.votes + 1 } : opt
             )
           };
         }
@@ -80,37 +81,41 @@ const PollsPage: React.FC = () => {
       <Header />
       <main className="flex-grow container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6 text-gray-800">Active Polls</h1>
-        
-        {polls.length === 0 ? (
+
+        {loading ? (
+          <p className="text-gray-600">Loading polls...</p>
+        ) : error ? (
+          <p className="text-red-600">Error: {error}</p>
+        ) : polls.length === 0 ? (
           <p className="text-gray-600">No polls available at the moment.</p>
         ) : (
           <div className="space-y-8">
             {polls.map(poll => (
-              <div 
-                key={poll.id} 
+              <div
+                key={poll._id}
                 className="bg-white p-6 rounded-lg shadow-md border border-gray-200"
               >
                 <h2 className="text-xl font-semibold mb-4 text-gray-700">
-                  {poll.question}
+                  {poll.title}
                 </h2>
-                
+
                 <div className="space-y-3">
-                  {poll.options.map(option => {
+                  {poll.options.map((option, index) => {
                     const totalVotes = poll.options.reduce(
                       (sum, opt) => sum + opt.votes,
                       0
                     );
-                    const percentage = totalVotes 
-                      ? ((option.votes / totalVotes) * 100).toFixed(1) 
+                    const percentage = totalVotes
+                      ? ((option.votes / totalVotes) * 100).toFixed(1)
                       : 0;
 
                     return (
-                      <div key={option.id} className="flex items-center gap-4">
+                      <div key={index} className="flex items-center gap-4">
                         <button
-                          onClick={() => handleVote(poll.id, option.id)}
-                          disabled={votedPolls.has(poll.id)}
+                          onClick={() => handleVote(poll._id, option.text)}
+                          disabled={votedPolls.has(poll._id)}
                           className={`px-4 py-2 rounded-md transition-colors ${
-                            votedPolls.has(poll.id)
+                            votedPolls.has(poll._id)
                               ? "bg-gray-300 cursor-not-allowed"
                               : "bg-blue-500 hover:bg-blue-600 text-white"
                           }`}
@@ -126,7 +131,7 @@ const PollsPage: React.FC = () => {
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2.5">
                             <div
-                              className="bg-blue-500 h-2.5 rounded-full"
+                              className="bg-blue-500 h-2.5 rounded-full transition-all duration-300"
                               style={{ width: `${percentage}%` }}
                             ></div>
                           </div>
@@ -135,8 +140,8 @@ const PollsPage: React.FC = () => {
                     );
                   })}
                 </div>
-                
-                {votedPolls.has(poll.id) && (
+
+                {votedPolls.has(poll._id) && (
                   <p className="mt-3 text-green-600 text-sm">
                     Thank you for voting!
                   </p>

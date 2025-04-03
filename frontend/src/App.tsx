@@ -8,6 +8,7 @@ import Forums from '../dashboard/Forums';
 import Users from '../dashboard/Users';
 import Budget from '../dashboard/Budget';
 import Documents from '../dashboard/Documents';
+import Polls from '../dashboard/Polls';
 import ForumsPage from '../pages/ForumsPage';
 import PetitionsPage from '../pages/PetitionsPage';
 import ReportIssuesPage from '../pages/ReportIssuesPage';
@@ -17,11 +18,13 @@ import ProtectedRoute from '../components/ProtectedRoutes';
 import PublicNotices from '../dashboard/PublicNotices';
 import PollsPage from '../pages/PollsPage';
 import AdminRoutePage from '../pages/AdminRoutePage';
+import AboutPage from '../pages/AboutPage'
+import UserProfile from '../pages/UserProfile'
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
+   
+      
         <div className="min-h-screen flex flex-col">
           <main className="flex-grow">
             <Routes>
@@ -30,6 +33,8 @@ function App() {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
               <Route path='/adminroute'  element={<AdminRoutePage  />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path='/profile' element={<UserProfile />} />
 
               {/* Admin Routes (Unprotected) */}
               <Route path="/admin" element={<AdminDashboard />}>
@@ -39,6 +44,7 @@ function App() {
                 <Route path="budget" element={<Budget />} />
                 <Route path="documents" element={<Documents />} />
                 <Route path="notices" element={<PublicNotices />} />
+                <Route path="polls" element={<Polls />} />
               </Route>
 
               {/* Protected Routes */}
@@ -52,8 +58,7 @@ function App() {
             </Routes>
           </main>
         </div>
-      </Router>
-    </AuthProvider>
+      
   );
 }
 

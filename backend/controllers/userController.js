@@ -49,6 +49,9 @@ exports.registerUser = async (req, res) => {
 // @desc    Login user
 // @route   POST /api/users/login
 // @access  Public
+// @desc    Login user
+// @route   POST /api/users/login
+// @access  Public
 exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -70,7 +73,11 @@ exports.loginUser = async (req, res) => {
       expiresIn: "1h",
     });
 
-    res.status(200).json({ token });
+    // Send back token and user ID
+    res.status(200).json({
+      token,
+      userId: user._id,
+    });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }

@@ -1,10 +1,12 @@
-import React from 'react';
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Footer from '../components/layout/Footer';
 import Header from '../components/layout/Header';
 
 interface Notice {
-  id: number;
+  id: string; // Changed to string to match MongoDB _id
   title: string;
   content: string;
   issuer: string;
@@ -13,40 +15,34 @@ interface Notice {
 }
 
 export default function PublicNoticesPage() {
-  const [notices] = useState<Notice[]>([
-    {
-      id: 4,
-      title: "Road Closure on Main Street",
-      content: "Main Street will be closed for maintenance from March 1-3, 2025. Please use alternate routes.",
-      issuer: "City Transportation Department",
-      timestamp: "Feb 24, 2025, 12:00 PM",
-      category: "General",
-    },
-    {
-      id: 3,
-      title: "Severe Weather Alert",
-      content: "A storm warning is in effect until 6 PM today. Stay indoors and avoid unnecessary travel.",
-      issuer: "National Weather Service",
-      timestamp: "Feb 24, 2025, 11:15 AM",
-      category: "Emergency",
-    },
-    {
-      id: 2,
-      title: "Community Town Hall Meeting",
-      content: "Join us on March 5, 2025, at 7 PM at City Hall to discuss local budget plans.",
-      issuer: "Mayor's Office",
-      timestamp: "Feb 24, 2025, 10:00 AM",
-      category: "Event",
-    },
-    {
-      id: 1,
-      title: "New Recycling Regulations",
-      content: "Starting March 1, 2025, all households must separate glass from other recyclables.",
-      issuer: "Environmental Services",
-      timestamp: "Feb 24, 2025, 9:00 AM",
-      category: "Regulation",
-    },
-  ]);
+  const [notices, setNotices] = useState<Notice[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch notices from the API on mount
+  useEffect(() => {
+    const fetchNotices = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/notifications');
+        // Map API data to Notice interface
+        const mappedNotices = response.data.map((notice: any) => ({
+          id: notice._id,
+          title: notice.message.split('.')[0] || 'Untitled Notice', // Extract first sentence as title
+          content: notice.message,
+          issuer: 'System Administrator', // Default issuer since not in API
+          timestamp: new Date(notice.createdAt).toLocaleString(), // Use createdAt
+          category: 'General' as const, // Default category since not in API
+        }));
+        setNotices(mappedNotices);
+        setLoading(false);
+      } catch (error) {
+        toast.error('Failed to fetch public notices');
+        setLoading(false);
+        console.error('Fetch error:', error);
+      }
+    };
+
+    fetchNotices();
+  }, []);
 
   // Get badge styling based on notice category
   const getCategoryBadgeStyle = (category: string) => {
@@ -73,53 +69,77 @@ export default function PublicNoticesPage() {
             <p className="text-gray-300 text-sm mt-1">Stay informed with official updates from your community.</p>
           </div>
 
+          {/* Loading State */}
+          {loading && (
+            <div className="p-6 bg-gray-100 border-b border-gray-200">
+              <p className="text-gray-700 font-medium">Loading public notices...</p>
+            </div>
+          )}
+
           {/* No Notices Message */}
-          {notices.length === 0 && (
+          {!loading && notices.length === 0 && (
             <div className="p-6 bg-gray-100 border-b border-gray-200">
               <p className="text-gray-700 font-medium">No public notices available at this time.</p>
             </div>
           )}
 
           {/* Notices List */}
-          <div className="p-6">
-            <div className="space-y-6">
-              {notices.map((notice) => (
-                <div
-                  key={notice.id}
-                  className="p-5 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition duration-300"
-                >
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start">
-                    <div className="flex-1">
-                      <div className="flex flex-wrap items-center gap-2 mb-2">
-                        <h2 className="text-lg sm:text-xl font-semibold text-gray-900">{notice.title}</h2>
-                        <span className={`inline-block px-2 py-0.5 text-xs font-semibold rounded-full ${getCategoryBadgeStyle(notice.category)}`}>
-                          {notice.category}
-                        </span>
+          {!loading && notices.length > 0 && (
+            <div className="p-6">
+              <div className="space-y-6">
+                {notices.map((notice) => (
+                  <div
+                    key={notice.id}
+                    className="p-5 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition duration-300"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start">
+                      <div className="flex-1">
+                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                          <h2 className="text-lg sm:text-xl font-semibold text-gray-900">{notice.title}</h2>
+                          <span
+                            className={`inline-block px-2 py-0.5 text-xs font-semibold rounded-full ${getCategoryBadgeStyle(
+                              notice.category
+                            )}`}
+                          >
+                            {notice.category}
+                          </span>
+                        </div>
+                        <p className="text-gray-700 break-words">{notice.content}</p>
+                        <div className="mt-3 text-sm text-gray-600">
+                          <p>
+                            <span className="font-medium">Issued by:</span> {notice.issuer}
+                          </p>
+                          <p className="text-gray-500">{notice.timestamp}</p>
+                        </div>
                       </div>
-                      <p className="text-gray-700">{notice.content}</p>
-                      <div className="mt-3 text-sm text-gray-600">
-                        <p>
-                          <span className="font-medium">Issued by:</span> {notice.issuer}
-                        </p>
-                        <p className="text-gray-500">{notice.timestamp}</p>
+                      <div className="mt-4 sm:mt-0 sm:ml-4 sm:flex-shrink-0">
+                        <button
+                          onClick={() => alert(`Details for "${notice.title}" would be shown here.`)}
+                          className="w-full sm:w-auto bg-gray-900 text-white py-1.5 px-4 rounded-lg hover:bg-blue-700 transition duration-200 font-medium"
+                        >
+                          View Details
+                        </button>
                       </div>
-                    </div>
-                    <div className="mt-4 sm:mt-0 sm:ml-4 sm:flex-shrink-0">
-                      <button
-                        onClick={() => alert(`Details for "${notice.title}" would be shown here.`)}
-                        className="w-full sm:w-auto bg-gray-900 text-white py-1.5 px-4 rounded-lg hover:bg-blue-700 transition duration-200 font-medium"
-                      >
-                        View Details
-                      </button>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </main>
       <Footer />
+      <ToastContainer
+        position="bottom-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </div>
   );
 }

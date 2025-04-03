@@ -2,7 +2,6 @@
 const express = require("express");
 const router = express.Router();
 const notificationController = require("../controllers/notificationController");
-const { protect } = require("../middlewares/authMiddleware");
 
 /**
  * @swagger
@@ -17,8 +16,6 @@ const { protect } = require("../middlewares/authMiddleware");
  *   post:
  *     summary: Create a new notification
  *     tags: [Notifications]
- *     security:
- *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -26,23 +23,11 @@ const { protect } = require("../middlewares/authMiddleware");
  *           schema:
  *             type: object
  *             required:
- *               - recipient
  *               - message
- *               - type
  *             properties:
- *               recipient:
- *                 type: string
- *                 description: ID of the user receiving the notification
  *               message:
  *                 type: string
  *                 description: Content of the notification
- *               type:
- *                 type: string
- *                 enum: [New Incident, Comment, Status Update, Like]
- *                 description: Type of notification
- *               relatedIncident:
- *                 type: string
- *                 description: ID of the related incident (if applicable)
  *     responses:
  *       201:
  *         description: Notification created successfully
@@ -50,8 +35,8 @@ const { protect } = require("../middlewares/authMiddleware");
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Notification'
- *       401:
- *         description: Not authorized
+ *       400:
+ *         description: Bad request (missing message)
  *       500:
  *         description: Server error
  */
@@ -61,10 +46,8 @@ router.post("/", notificationController.createNotification);
  * @swagger
  * /api/notifications:
  *   get:
- *     summary: Get all notifications for a user
+ *     summary: Get all notifications
  *     tags: [Notifications]
- *     security:
- *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: List of notifications
@@ -74,8 +57,6 @@ router.post("/", notificationController.createNotification);
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/Notification'
- *       401:
- *         description: Not authorized
  *       500:
  *         description: Server error
  */
@@ -85,10 +66,8 @@ router.get("/", notificationController.getNotifications);
  * @swagger
  * /api/notifications/{id}/read:
  *   put:
- *     summary: Mark a notification as read
+ *     summary: Retrieve a notification (placeholder since isRead is removed)
  *     tags: [Notifications]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -98,19 +77,17 @@ router.get("/", notificationController.getNotifications);
  *         description: Notification ID
  *     responses:
  *       200:
- *         description: Notification marked as read
+ *         description: Notification retrieved
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Notification'
- *       401:
- *         description: Not authorized
  *       404:
  *         description: Notification not found
  *       500:
  *         description: Server error
  */
-router.put("/:id/read",notificationController.markAsRead);
+router.put("/:id/read", notificationController.markAsRead);
 
 /**
  * @swagger
@@ -118,8 +95,6 @@ router.put("/:id/read",notificationController.markAsRead);
  *   delete:
  *     summary: Delete a notification
  *     tags: [Notifications]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -130,8 +105,6 @@ router.put("/:id/read",notificationController.markAsRead);
  *     responses:
  *       200:
  *         description: Notification deleted successfully
- *       401:
- *         description: Not authorized
  *       404:
  *         description: Notification not found
  *       500:

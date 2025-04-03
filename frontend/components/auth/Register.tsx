@@ -201,7 +201,7 @@ const Register = () => {
                       <option value="Citizen">Citizen</option>
                       <option value="Government Official">Government Official</option>
                       <option value="NGO">NGO</option>
-                      <option value="Admin">Admin</option>
+                      {/* <option value="Admin">Admin</option> */}
                     </select>
                   </div>
                 </div>

@@ -2,7 +2,7 @@ const Petition = require("../models/Petition");
 
 // @desc    Create a new petition
 // @route   POST /api/petitions
-// @access  Private
+// @access  Public
 exports.createPetition = async (req, res) => {
   try {
     const { title, description, goal, tags } = req.body;
@@ -10,7 +10,7 @@ exports.createPetition = async (req, res) => {
     const petition = new Petition({
       title,
       description,
-      author: req.user.id,
+      author: "anonymous", // No user association
       goal,
       tags,
     });
@@ -28,7 +28,7 @@ exports.createPetition = async (req, res) => {
 // @access  Public
 exports.getAllPetitions = async (req, res) => {
   try {
-    const petitions = await Petition.find().populate("author", "name email");
+    const petitions = await Petition.find();
     res.status(200).json(petitions);
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
@@ -40,10 +40,7 @@ exports.getAllPetitions = async (req, res) => {
 // @access  Public
 exports.getPetitionById = async (req, res) => {
   try {
-    const petition = await Petition.findById(req.params.id).populate(
-      "author",
-      "name email"
-    );
+    const petition = await Petition.findById(req.params.id);
 
     if (!petition) {
       return res.status(404).json({ message: "Petition not found" });
@@ -57,7 +54,7 @@ exports.getPetitionById = async (req, res) => {
 
 // @desc    Sign a petition
 // @route   POST /api/petitions/:id/sign
-// @access  Private
+// @access  Public
 exports.signPetition = async (req, res) => {
   try {
     const petition = await Petition.findById(req.params.id);
@@ -66,17 +63,8 @@ exports.signPetition = async (req, res) => {
       return res.status(404).json({ message: "Petition not found" });
     }
 
-    // Check if the user has already signed the petition
-    const hasSigned = petition.signatures.some(
-      (signature) => signature.user.toString() === req.user.id
-    );
-
-    if (hasSigned) {
-      return res.status(400).json({ message: "You have already signed this petition" });
-    }
-
-    // Add the user's signature
-    petition.signatures.push({ user: req.user.id });
+    // No check for existing signatures since we don't track users
+    petition.signatures.push({ user: "anonymous" });
 
     // Check if the goal has been achieved
     if (petition.signatures.length >= petition.goal) {
@@ -93,7 +81,7 @@ exports.signPetition = async (req, res) => {
 
 // @desc    Update a petition
 // @route   PUT /api/petitions/:id
-// @access  Private (only author can update)
+// @access  Public
 exports.updatePetition = async (req, res) => {
   try {
     const { title, description, goal, tags } = req.body;
@@ -102,11 +90,6 @@ exports.updatePetition = async (req, res) => {
 
     if (!petition) {
       return res.status(404).json({ message: "Petition not found" });
-    }
-
-    // Check if the user is the author
-    if (petition.author.toString() !== req.user.id) {
-      return res.status(403).json({ message: "Not authorized to update this petition" });
     }
 
     petition.title = title || petition.title;
@@ -124,21 +107,13 @@ exports.updatePetition = async (req, res) => {
 
 // @desc    Delete a petition
 // @route   DELETE /api/petitions/:id
-// @access  Private (only author or admin can delete)
+// @access  Public
 exports.deletePetition = async (req, res) => {
   try {
     const petition = await Petition.findById(req.params.id);
 
     if (!petition) {
       return res.status(404).json({ message: "Petition not found" });
-    }
-
-    // Check if the user is the author or an admin
-    if (
-      petition.author.toString() !== req.user.id &&
-      req.user.role !== "Admin"
-    ) {
-      return res.status(403).json({ message: "Not authorized to delete this petition" });
     }
 
     await petition.remove();

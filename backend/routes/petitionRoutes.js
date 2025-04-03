@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const petitionController = require("../controllers/petitionController");
-const { protect } = require("../middlewares/authMiddleware");
 
 /**
  * @swagger
@@ -16,8 +15,6 @@ const { protect } = require("../middlewares/authMiddleware");
  *   post:
  *     summary: Create a new petition
  *     tags: [Petitions]
- *     security:
- *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -46,12 +43,10 @@ const { protect } = require("../middlewares/authMiddleware");
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Petition'
- *       401:
- *         description: Not authorized
  *       500:
  *         description: Server error
  */
-router.post("/", protect, petitionController.createPetition);
+router.post("/", petitionController.createPetition);
 
 /**
  * @swagger
@@ -106,8 +101,6 @@ router.get("/:id", petitionController.getPetitionById);
  *   post:
  *     summary: Sign a petition
  *     tags: [Petitions]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -124,14 +117,12 @@ router.get("/:id", petitionController.getPetitionById);
  *               $ref: '#/components/schemas/Petition'
  *       400:
  *         description: You have already signed this petition
- *       401:
- *         description: Not authorized
  *       404:
  *         description: Petition not found
  *       500:
  *         description: Server error
  */
-router.post("/:id/sign", protect, petitionController.signPetition);
+router.post("/:id/sign", petitionController.signPetition);
 
 /**
  * @swagger
@@ -139,8 +130,6 @@ router.post("/:id/sign", protect, petitionController.signPetition);
  *   put:
  *     summary: Update a petition
  *     tags: [Petitions]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -172,16 +161,12 @@ router.post("/:id/sign", protect, petitionController.signPetition);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Petition'
- *       401:
- *         description: Not authorized
- *       403:
- *         description: Forbidden (not the author)
  *       404:
  *         description: Petition not found
  *       500:
  *         description: Server error
  */
-router.put("/:id", protect, petitionController.updatePetition);
+router.put("/:id", petitionController.updatePetition);
 
 /**
  * @swagger
@@ -189,8 +174,6 @@ router.put("/:id", protect, petitionController.updatePetition);
  *   delete:
  *     summary: Delete a petition
  *     tags: [Petitions]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -201,15 +184,11 @@ router.put("/:id", protect, petitionController.updatePetition);
  *     responses:
  *       200:
  *         description: Petition deleted successfully
- *       401:
- *         description: Not authorized
- *       403:
- *         description: Forbidden (not the author or admin)
  *       404:
  *         description: Petition not found
  *       500:
  *         description: Server error
  */
-router.delete("/:id", protect, petitionController.deletePetition);
+router.delete("/:id", petitionController.deletePetition);
 
 module.exports = router;

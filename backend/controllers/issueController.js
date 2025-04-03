@@ -10,7 +10,7 @@ exports.createIssue = async (req, res) => {
     const issue = new Issue({
       title,
       description,
-      author: req.user.id,
+      
       priority,
       tags,
     });
@@ -36,7 +36,7 @@ exports.getAllIssues = async (req, res) => {
 };
 
 // @desc    Get a single issue by ID
-// @route   GET /api/issues/:id
+// @ro  ute   GET /api/issues/:id
 // @access  Public
 exports.getIssueById = async (req, res) => {
   try {
